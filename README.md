@@ -1,2 +1,2 @@
-# InspectionSystemBF6
-Inspection system for bf6, i previously did it for bf2042 as a portfolio project
+# Game feel project
+The project is inspired by the Battlefield 6 inspection system, where you use your mouse to inspect.
