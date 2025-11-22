@@ -7,6 +7,8 @@ public class CameraMovement : MonoBehaviour
 
     public GameInput gameInput;
 
+    public Transform playerTransform;
+
     [Range(1f, 100f)]
     public float mouseSensX;
     [Range(1f, 100f)]
@@ -21,6 +23,7 @@ public class CameraMovement : MonoBehaviour
     void Awake()
     {
         inspectScript = FindAnyObjectByType<Inspect>();
+
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -52,6 +55,8 @@ public class CameraMovement : MonoBehaviour
     {
         mouseX = lookX * mouseSensX * Time.deltaTime;
         transform.Rotate(Vector3.up * mouseX);
+
+        playerTransform.Rotate(Vector3.up * mouseX);
     }
 
     private void HandleLookY(float lookY)
