@@ -12,6 +12,9 @@ public class PlayerMovement : MonoBehaviour
     public bool canJump;
 
     private Vector3 velocity;
+    private Vector3 moveDirection;
+
+    public Vector3 MoveDirection => moveDirection;
 
     private GameInput gameInput;
     private CharacterController controller;
@@ -41,8 +44,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector3 move = transform.right * gameInput.Player.Move.ReadValue<Vector2>().x + transform.forward * gameInput.Player.Move.ReadValue<Vector2>().y;
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        Vector2 inputVector = gameInput.Player.Move.ReadValue<Vector2>();
+        moveDirection = (transform.right * inputVector.x + transform.forward * inputVector.y).normalized;
+        
+        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
 
         velocity.y += gravityScale * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);

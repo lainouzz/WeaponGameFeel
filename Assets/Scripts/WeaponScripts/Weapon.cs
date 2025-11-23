@@ -4,8 +4,11 @@ using UnityEngine.InputSystem;
 
 public class Weapon : MonoBehaviour
 {
+    public Transform firePoint;
+
     public float swapMultiplier;
     public float smoothSwayAmount;
+    public float rollAmount;
 
     //fire config
     public bool isAutomatic;
@@ -23,6 +26,7 @@ public class Weapon : MonoBehaviour
 
     private Inspect Inspect;
     private GameInput gameInput;
+    private PlayerMovement playerMovement;
 
     // recoil states
     private float recoilPitch; 
@@ -43,7 +47,9 @@ public class Weapon : MonoBehaviour
     void Awake()
     {
         Inspect = FindAnyObjectByType<Inspect>();
+        playerMovement = GetComponentInParent<PlayerMovement>();
         gameInput = new GameInput();
+
         originalPosition = transform.localPosition;
     }
 
@@ -92,21 +98,27 @@ public class Weapon : MonoBehaviour
 
         recoilKickVel += recoilKickImpule;
 
-        Debug.DrawRay(transform.position, transform.forward * 5, Color.red, 1f);
+        Debug.DrawRay(firePoint.position, transform.forward * 5, Color.red, 1f);
     }
 
     public void RecoilAndSway()
     {
         Vector2 mouse = gameInput.Player.Look.ReadValue<Vector2>() * swapMultiplier;
+        mouse.y = Mathf.Clamp(mouse.y, -10f, 10f);
+        mouse.x = Mathf.Clamp(mouse.x, -10f, 10f);
 
         Quaternion rotX = Quaternion.AngleAxis(-mouse.y, Vector3.right);
         Quaternion rotY = Quaternion.AngleAxis(mouse.x, Vector3.up);
         Quaternion swayRot = rotX * rotY;
 
+        Vector2 moveInput = gameInput.Player.Move.ReadValue<Vector2>();
+        Quaternion rollX = Quaternion.AngleAxis(moveInput.x * rollAmount, Vector3.forward);
+        rollX = Mathf.Abs(moveInput.x) > 0.1f ? rollX : Quaternion.Slerp(rollX, Quaternion.identity, Time.deltaTime * 5f);
+
         UpdateRecoil(Time.deltaTime);
         Quaternion recoilRot = Quaternion.Euler(recoilPitch, recoilYaw, recoilRoll);
 
-        Quaternion finalRot = swayRot * recoilRot;
+        Quaternion finalRot = swayRot * recoilRot * rollX;
         // slerp toward the combined sway + recoil rotation, not just sway
         transform.localRotation = Quaternion.Slerp(transform.localRotation, finalRot, smoothSwayAmount * Time.deltaTime);
 

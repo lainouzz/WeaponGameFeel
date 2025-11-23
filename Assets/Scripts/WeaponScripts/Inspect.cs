@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class Inspect : MonoBehaviour
 {
     public float maxPitch = 30f;
-    [Range(0f, 90f)]
+    [Range(-30f, 0f)]
     public float minPitch = -30f;
     [Range(0f, 90f)]
     public float maxRoll = 30f;
@@ -52,6 +52,7 @@ public class Inspect : MonoBehaviour
 
     private GameInput gameInput;
     public bool isInspecting;
+    public bool isAtMaxRoll;
 
     void Awake()
     {
@@ -138,6 +139,8 @@ public class Inspect : MonoBehaviour
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
         roll = Mathf.Clamp(roll, minRoll, maxRoll);
         yaw = Mathf.Clamp(yaw, minYaw, maxYaw);
+
+        
     }
 
     public void InspectDone()
