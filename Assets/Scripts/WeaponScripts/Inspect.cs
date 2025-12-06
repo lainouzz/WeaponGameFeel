@@ -15,6 +15,15 @@ public class Inspect : MonoBehaviour
     [Range(-90f, 0f)]
     public float minYaw = -30f;
 
+    // Roll extension config
+    [Header("Extended Roll (Inspect Other Side)")]
+    [Tooltip("How close to max/min roll before extension is allowed")]
+    public float rollThreshold = 5f;
+    [Tooltip("Additional roll beyond max/min when extended")]
+    public float rollExtension = 60f;
+    [Tooltip("How far back from max you need to go to exit extended mode")]
+    public float rollExitThreshold = 15f;
+
     // weight
     public float weight = 1f; // in KG
     public float baseWeight = 2f; // in KG
@@ -53,6 +62,10 @@ public class Inspect : MonoBehaviour
     private GameInput gameInput;
     public bool isInspecting;
     public bool isAtMaxRoll;
+
+    // Extended roll state tracking
+    private bool isExtendedRollActive;
+    private int extendedRollDirection; // 1 = positive (max), -1 = negative (min), 0 = none
 
     void Awake()
     {
@@ -110,6 +123,10 @@ public class Inspect : MonoBehaviour
     private void OnInspectCanceled(InputAction.CallbackContext ctx)
     {
         isInspecting = false;
+        // Reset extended roll state when inspection ends
+        isExtendedRollActive = false;
+        extendedRollDirection = 0;
+        isAtMaxRoll = false;
     }
 
     public void OnInspect()
@@ -125,8 +142,56 @@ public class Inspect : MonoBehaviour
 
         Vector2 lookInput = gameInput.Player.Look.ReadValue<Vector2>();
 
-        // Integrate input into target angles and clamp
-        targetRoll = Mathf.Clamp(targetRoll - lookInput.x * sensitivity * dt, minRoll, maxRoll);
+        // Calculate dynamic roll limits
+        float dynamicMaxRoll = maxRoll;
+        float dynamicMinRoll = minRoll;
+
+        // Check for entering extended roll mode (hysteresis: enter condition)
+        if (!isExtendedRollActive)
+        {
+            // Near max roll and pushing further right
+            if (targetRoll >= maxRoll - rollThreshold && lookInput.x < 0)
+            {
+                isExtendedRollActive = true;
+                extendedRollDirection = 1;
+                isAtMaxRoll = true;
+            }
+            // Near min roll and pushing further left
+            else if (targetRoll <= minRoll + rollThreshold && lookInput.x > 0)
+            {
+                isExtendedRollActive = true;
+                extendedRollDirection = -1;
+                isAtMaxRoll = true;
+            }
+        }
+        else
+        {
+            // Check for exiting extended roll mode (hysteresis: exit condition - must back off significantly)
+            if (extendedRollDirection == 1 && targetRoll < maxRoll - rollExitThreshold)
+            {
+                isExtendedRollActive = false;
+                extendedRollDirection = 0;
+                isAtMaxRoll = false;
+            }
+            else if (extendedRollDirection == -1 && targetRoll > minRoll + rollExitThreshold)
+            {
+                isExtendedRollActive = false;
+                extendedRollDirection = 0;
+                isAtMaxRoll = false;
+            }
+        }
+
+        // Apply extended limits when active
+        if (isExtendedRollActive)
+        {
+            if (extendedRollDirection == 1)
+                dynamicMaxRoll = maxRoll + rollExtension;
+            else if (extendedRollDirection == -1)
+                dynamicMinRoll = minRoll - rollExtension;
+        }
+
+        // Integrate input into target angles and clamp using dynamic limits
+        targetRoll = Mathf.Clamp(targetRoll - lookInput.x * sensitivity * dt, dynamicMinRoll, dynamicMaxRoll);
         targetPitch = Mathf.Clamp(targetPitch - lookInput.y * sensitivity * dt, minPitch, maxPitch);
         targetYaw = Mathf.Clamp(targetYaw + lookInput.x * sensitivity * dt, minYaw, maxYaw);
 
@@ -135,12 +200,10 @@ public class Inspect : MonoBehaviour
         roll = Mathf.SmoothDamp(roll, targetRoll, ref rollVel, smoothTime, maxAngularSpeed, dt);
         yaw = Mathf.SmoothDamp(yaw, targetYaw, ref yawVel, smoothTime, maxAngularSpeed, dt);
 
-        // Hard clamp as safety (should be rarely hit since targets are clamped)
+        // Hard clamp as safety
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
-        roll = Mathf.Clamp(roll, minRoll, maxRoll);
+        roll = Mathf.Clamp(roll, minRoll - rollExtension, maxRoll + rollExtension);
         yaw = Mathf.Clamp(yaw, minYaw, maxYaw);
-
-        
     }
 
     public void InspectDone()
@@ -166,6 +229,7 @@ public class Inspect : MonoBehaviour
         roll = Mathf.Clamp(roll, minRoll, maxRoll);
         yaw = Mathf.Clamp(yaw, minYaw, maxYaw);
     }
+
     void OnDisable()
     {
         gameInput.Player.Inspect.started -= OnInspectStarted;

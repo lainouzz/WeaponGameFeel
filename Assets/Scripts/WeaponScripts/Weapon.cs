@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class Weapon : MonoBehaviour
 {
     public Transform firePoint;
+    public ParticleSystem particleSystem;
 
     public float swapMultiplier;
     public float smoothSwayAmount;
@@ -43,6 +44,9 @@ public class Weapon : MonoBehaviour
 
     private float nextFireTime;
 
+    // muzzle flash state
+    private bool isAutoMuzzlePlaying;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -51,6 +55,14 @@ public class Weapon : MonoBehaviour
         gameInput = new GameInput();
 
         originalPosition = transform.localPosition;
+
+        // Ensure particle system is configured safely
+        if (particleSystem != null)
+        {
+            var main = particleSystem.main;
+            main.loop = false; // default to non-looping; we'll enable looping when auto-firing
+            particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
     }
 
     void OnEnable()
@@ -83,11 +95,57 @@ public class Weapon : MonoBehaviour
         bool shouldWeFire = isAutomatic ? pressed : pressOnce;
 
         // enforce fire rate using nextFireTime
-        if (shouldWeFire && Time.time >= nextFireTime)
+        if (shouldWeFire && Time.time >= nextFireTime && !Inspect.isInspecting)
         {
             FireOnce();
             nextFireTime = Time.time + (fireRate > 0 ? 1f / fireRate : 0f);
         }
+
+        // Muzzle flash handling
+        if (particleSystem != null)
+        {
+            if (isAutomatic)
+            {
+                if (pressed && !isAutoMuzzlePlaying)
+                {
+                    StartAutoMuzzle();
+                }
+                else if (!pressed && isAutoMuzzlePlaying)
+                {
+                    StopAutoMuzzle();
+                }
+            }
+            else
+            {
+                if (pressOnce)
+                {
+                    PlaySingleMuzzle();
+                }
+            }
+        }
+    }
+
+    private void StartAutoMuzzle()
+    {
+        var main = particleSystem.main;
+        main.loop = true;
+        particleSystem.Play();
+        isAutoMuzzlePlaying = true;
+    }
+
+    private void StopAutoMuzzle()
+    {
+        particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        isAutoMuzzlePlaying = false;
+    }
+
+    private void PlaySingleMuzzle()
+    {
+        var main = particleSystem.main;
+        main.loop = false;
+        // Emit a single burst so it plays once without needing manual stop
+        //particleSystem.Emit(1);
+        particleSystem.Play();
     }
 
     private void FireOnce()
@@ -193,5 +251,10 @@ public class Weapon : MonoBehaviour
     private void OnDisable()
     {
         gameInput.Disable();
+        // Ensure muzzle flash is stopped
+        if (particleSystem != null)
+        {
+            StopAutoMuzzle();
+        }
     }
 }
