@@ -9,6 +9,9 @@ public class WeaponIdleState : WeaponStateBase
 {
     public override WeaponStateType StateType => WeaponStateType.Idle;
 
+    private float lastDryFireTime;
+    private const float DryFireCooldown = 0.3f; // Prevent spam clicking
+
     public WeaponIdleState(WeaponStateMachine stateMachine, Weapon weapon) 
         : base(stateMachine, weapon) { }
 
@@ -37,10 +40,19 @@ public class WeaponIdleState : WeaponStateBase
         {
             RequestStateChange(WeaponStateType.Firing);
         }
-        else if (wantsToFire && weapon.CurrentAmmo <= 0 && weapon.ReserveAmmo > 0)
+        else if (wantsToFire && weapon.CurrentAmmo <= 0)
         {
-            // Auto-reload when trying to fire with empty mag
-            RequestStateChange(WeaponStateType.Reloading);
+            if (weapon.ReserveAmmo > 0)
+            {
+                // Auto-reload when trying to fire with empty mag
+                RequestStateChange(WeaponStateType.Reloading);
+            }
+            else if (Mouse.current.leftButton.wasPressedThisFrame && Time.time >= lastDryFireTime + DryFireCooldown)
+            {
+                // Play dry fire sound - completely out of ammo
+                weapon.PlayDryFireSound();
+                lastDryFireTime = Time.time;
+            }
         }
     }
 

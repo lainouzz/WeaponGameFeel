@@ -137,6 +137,7 @@ public class Weapon : MonoBehaviour
     private PlayerMovement playerMovement;
     private CameraMovement cameraMovement;
     private Camera mainCamera;
+    private WeaponSoundHandler soundHandler;
 
     // State machine
     private WeaponStateMachine stateMachine;
@@ -211,6 +212,7 @@ public class Weapon : MonoBehaviour
         cameraMovement = FindAnyObjectByType<CameraMovement>();
         mainCamera = Camera.main;
         gameInput = new GameInput();
+        soundHandler = GetComponent<WeaponSoundHandler>();
 
         // Initialize state machine
         InitializeStateMachine();
@@ -385,6 +387,12 @@ public class Weapon : MonoBehaviour
         nextFireTime = Time.time + FireInterval;
         lastFireTime = Time.time;
 
+        // Play fire sound
+        if (soundHandler != null)
+        {
+            soundHandler.PlayFireSound();
+        }
+
         // Muzzle flash
         if (particleSystem != null)
         {
@@ -489,7 +497,6 @@ public class Weapon : MonoBehaviour
         // Could trigger animation here
     }
 
-
     public void OnDrawFinish()
     {
         // Weapon is ready
@@ -502,6 +509,17 @@ public class Weapon : MonoBehaviour
     public void OnHolsterFinish()
     {
         // Weapon can be disabled now
+    }
+
+    /// <summary>
+    /// Play dry fire sound (called when firing with no ammo)
+    /// </summary>
+    public void PlayDryFireSound()
+    {
+        if (soundHandler != null)
+        {
+            soundHandler.PlayDryFireSound();
+        }
     }
 
     #endregion
