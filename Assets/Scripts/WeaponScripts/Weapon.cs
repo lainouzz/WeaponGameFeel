@@ -1,12 +1,13 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class Weapon : MonoBehaviour
 {
     public Transform firePoint;
     public ParticleSystem particleSystem;
+    public TMP_Text ammoText;
 
     public float swapMultiplier;
     public float smoothSwayAmount;
@@ -272,6 +273,9 @@ public class Weapon : MonoBehaviour
         currentAmmo = magazineSize;
         reserveAmmo = maxReserveAmmo;
         
+        // Subscribe to ammo changes for UI updates
+        OnAmmoChanged += HandleAmmoChanged;
+        
         // Initialize state machine
         stateMachine.Initialize(WeaponStateType.Idle);
         
@@ -279,6 +283,17 @@ public class Weapon : MonoBehaviour
 
         // Notify UI of initial ammo state
         OnAmmoChanged?.Invoke(currentAmmo, reserveAmmo);
+    }
+
+    /// <summary>
+    /// Handles UI update when ammo changes
+    /// </summary>
+    private void HandleAmmoChanged(int current, int reserve)
+    {
+        if (ammoText != null)
+        {
+            ammoText.text = $"{current} / {reserve}";
+        }
     }
 
     void OnEnable()
@@ -490,6 +505,11 @@ public class Weapon : MonoBehaviour
             currentMagazineObject.SetActive(true);
             Debug.Log("[Weapon] Current magazine shown");
         }
+    }
+
+    public void UpdateUI()
+    {
+        ammoText.text = $"{currentAmmo} / {reserveAmmo}";
     }
 
     public void OnDrawStart()
@@ -882,6 +902,10 @@ public class Weapon : MonoBehaviour
         gameInput.Player.Aim.started -= OnAimStarted;
         gameInput.Player.Aim.canceled -= OnAimCanceled;
         gameInput.Disable();
+        
+        // Unsubscribe from events
+        OnAmmoChanged -= HandleAmmoChanged;
+        
         // Ensure muzzle flash is stopped
         if (particleSystem != null)
         {
