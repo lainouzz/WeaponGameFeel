@@ -596,7 +596,7 @@
                     "name": "Cancel",
                     "type": "Button",
                     "id": "15cef263-9014-4fd5-94d9-4e4a6234a6ef",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -641,6 +641,15 @@
                     "name": "OpenUI",
                     "type": "PassThrough",
                     "id": "7b384316-c638-4425-8b26-9f6b017d1087",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MainMenuUI",
+                    "type": "PassThrough",
+                    "id": "421c4ebe-4c0d-4dcf-8729-1c07a7d0474b",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -1079,6 +1088,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "OpenUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "410e40d7-3af0-49da-9e09-3060dc40dc84",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MainMenuUI",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

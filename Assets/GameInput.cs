@@ -618,7 +618,7 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
                     ""name"": ""Cancel"",
                     ""type"": ""Button"",
                     ""id"": ""15cef263-9014-4fd5-94d9-4e4a6234a6ef"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -663,6 +663,15 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
                     ""name"": ""OpenUI"",
                     ""type"": ""PassThrough"",
                     ""id"": ""7b384316-c638-4425-8b26-9f6b017d1087"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MainMenuUI"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""421c4ebe-4c0d-4dcf-8729-1c07a7d0474b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -1106,6 +1115,17 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""410e40d7-3af0-49da-9e09-3060dc40dc84"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""MainMenuUI"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""7236c0d9-6ca3-47cf-a6ee-a97f5b59ea77"",
                     ""path"": ""<XRController>/devicePosition"",
                     ""interactions"": """",
@@ -1215,6 +1235,7 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         m_UI_RightClick = m_UI.FindAction("RightClick", throwIfNotFound: true);
         m_UI_MiddleClick = m_UI.FindAction("MiddleClick", throwIfNotFound: true);
         m_UI_OpenUI = m_UI.FindAction("OpenUI", throwIfNotFound: true);
+        m_UI_MainMenuUI = m_UI.FindAction("MainMenuUI", throwIfNotFound: true);
         m_UI_ScrollWheel = m_UI.FindAction("ScrollWheel", throwIfNotFound: true);
         m_UI_TrackedDevicePosition = m_UI.FindAction("TrackedDevicePosition", throwIfNotFound: true);
         m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
@@ -1419,6 +1440,7 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_RightClick;
     private readonly InputAction m_UI_MiddleClick;
     private readonly InputAction m_UI_OpenUI;
+    private readonly InputAction m_UI_MainMenuUI;
     private readonly InputAction m_UI_ScrollWheel;
     private readonly InputAction m_UI_TrackedDevicePosition;
     private readonly InputAction m_UI_TrackedDeviceOrientation;
@@ -1434,6 +1456,7 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         public InputAction @RightClick => m_Wrapper.m_UI_RightClick;
         public InputAction @MiddleClick => m_Wrapper.m_UI_MiddleClick;
         public InputAction @OpenUI => m_Wrapper.m_UI_OpenUI;
+        public InputAction @MainMenuUI => m_Wrapper.m_UI_MainMenuUI;
         public InputAction @ScrollWheel => m_Wrapper.m_UI_ScrollWheel;
         public InputAction @TrackedDevicePosition => m_Wrapper.m_UI_TrackedDevicePosition;
         public InputAction @TrackedDeviceOrientation => m_Wrapper.m_UI_TrackedDeviceOrientation;
@@ -1470,6 +1493,9 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
             @OpenUI.started += instance.OnOpenUI;
             @OpenUI.performed += instance.OnOpenUI;
             @OpenUI.canceled += instance.OnOpenUI;
+            @MainMenuUI.started += instance.OnMainMenuUI;
+            @MainMenuUI.performed += instance.OnMainMenuUI;
+            @MainMenuUI.canceled += instance.OnMainMenuUI;
             @ScrollWheel.started += instance.OnScrollWheel;
             @ScrollWheel.performed += instance.OnScrollWheel;
             @ScrollWheel.canceled += instance.OnScrollWheel;
@@ -1507,6 +1533,9 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
             @OpenUI.started -= instance.OnOpenUI;
             @OpenUI.performed -= instance.OnOpenUI;
             @OpenUI.canceled -= instance.OnOpenUI;
+            @MainMenuUI.started -= instance.OnMainMenuUI;
+            @MainMenuUI.performed -= instance.OnMainMenuUI;
+            @MainMenuUI.canceled -= instance.OnMainMenuUI;
             @ScrollWheel.started -= instance.OnScrollWheel;
             @ScrollWheel.performed -= instance.OnScrollWheel;
             @ScrollWheel.canceled -= instance.OnScrollWheel;
@@ -1602,6 +1631,7 @@ public partial class @GameInput: IInputActionCollection2, IDisposable
         void OnRightClick(InputAction.CallbackContext context);
         void OnMiddleClick(InputAction.CallbackContext context);
         void OnOpenUI(InputAction.CallbackContext context);
+        void OnMainMenuUI(InputAction.CallbackContext context);
         void OnScrollWheel(InputAction.CallbackContext context);
         void OnTrackedDevicePosition(InputAction.CallbackContext context);
         void OnTrackedDeviceOrientation(InputAction.CallbackContext context);

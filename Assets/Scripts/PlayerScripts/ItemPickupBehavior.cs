@@ -64,7 +64,18 @@ public class ItemPickupBehavior : MonoBehaviour
                 if (pickupText != null)
                 {
                     pickupText.gameObject.SetActive(true);
-                    pickupText.text = $"Press E to pick up {pickup.itemData.itemName}";
+                    
+                    // Show quantity info if at limit
+                    if (playerInventoryManager != null && playerInventoryManager.IsItemAtLimit(pickup.itemData))
+                    {
+                        pickupText.text = $"{pickup.itemData.itemName} (FULL)";
+                    }
+                    else
+                    {
+                        int current = playerInventoryManager != null ? playerInventoryManager.GetItemQuantity(pickup.itemData) : 0;
+                        int limit = pickup.itemData.quantityLimit;
+                        pickupText.text = $"Press E to pick up {pickup.itemData.itemName} ({current}/{limit})";
+                    }
                 }
                 return;
             }
@@ -83,12 +94,27 @@ public class ItemPickupBehavior : MonoBehaviour
         if (currentItem == null || currentItem.itemData == null) return;
         if (playerInventoryManager == null) return;
 
-        playerInventoryManager.AddItem(currentItem.itemData);
-        playerInventoryManager.RefreshUI();
-        Debug.Log($"Picked up {currentItem.itemData.itemName}");
+        // Check if we can pick up
+        if (playerInventoryManager.IsItemAtLimit(currentItem.itemData))
+        {
+            Debug.Log($"Cannot pick up {currentItem.itemData.itemName} - inventory full for this item!");
+            return;
+        }
 
-        Destroy(currentItem.gameObject);
-        currentItem = null;
+        int overflow = playerInventoryManager.AddItem(currentItem.itemData);
+        
+        if (overflow == 0)
+        {
+            // Fully picked up
+            Debug.Log($"Picked up {currentItem.itemData.itemName}");
+            Destroy(currentItem.gameObject);
+            currentItem = null;
+        }
+        else
+        {
+            // Partial pickup (shouldn't happen with quantity=1, but handles future cases)
+            Debug.Log($"Partially picked up {currentItem.itemData.itemName}, {overflow} remaining");
+        }
 
         if (pickupText != null)
         {

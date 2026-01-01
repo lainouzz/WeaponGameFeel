@@ -27,6 +27,7 @@ public class PlayerInventoryManager : MonoBehaviour
     [Header("Save/Load")]
     [SerializeField] private ItemDatabase itemDatabase;
     [SerializeField] private bool autoSave = true;
+    [SerializeField] private bool loadOnStart = true;
     [SerializeField] private string saveFileName = "inventory.json";
 
     /// <summary>
@@ -47,11 +48,14 @@ public class PlayerInventoryManager : MonoBehaviour
     // Stored items dictionary (persistent)
     private Dictionary<string, int> storedItems = new Dictionary<string, int>();
 
+    public static PlayerInventoryManager instance { get; private set; }
+
     // Active session items (for UI display)
     private List<InventoryItem> items = new List<InventoryItem>();
-    private List<InventoryItemUI> uiInstances = new List<InventoryItemUI>();
+    private List<InventoryItemUI> uiinstances = new List<InventoryItemUI>();
     private int credits;
     private bool isOpen;
+    private bool isInitialized;
 
     public int Credits => credits;
     public bool IsOpen => isOpen;
@@ -60,39 +64,102 @@ public class PlayerInventoryManager : MonoBehaviour
 
     void Awake()
     {
-        if (itemDatabase != null)
+        InitializeDatabase();
+
+        // Singleton pattern (optional)
+        if (instance != null && instance != this)
         {
-            itemDatabase.Initialize();
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
         }
     }
 
     void Start()
     {
-        // Try to load saved data first
-        if (!LoadInventory())
+        if (loadOnStart)
         {
-            // No save found, use starting configuration
-            credits = startingCredits;
-            
-            foreach (var itemData in startingItems)
-            {
-                if (itemData != null)
-                {
-                    AddItem(itemData);
-                }
-            }
+            InitializeInventory();
         }
-
-        UpdateCreditsUI();
-        
-        // Rebuild items list from stored dictionary
-        RebuildItemsFromStorage();
 
         // Set initial state for in-game UI
         if (isInGameUI && startClosed)
         {
             CloseInventory();
         }
+    }
+
+    private void InitializeDatabase()
+    {
+        if (itemDatabase == null)
+        {
+            Debug.LogError("[PlayerInventory] ItemDatabase is not assigned! Save/Load will not work.");
+            return;
+        }
+        
+        itemDatabase.Initialize();
+    }
+
+    /// <summary>
+    /// Initialize inventory - call this to load saved data
+    /// </summary>
+    public void InitializeInventory()
+    {
+        if (isInitialized) return;
+
+        // Make sure database is initialized
+        if (itemDatabase == null)
+        {
+            Debug.LogError("[PlayerInventory] Cannot initialize - ItemDatabase is null!");
+            return;
+        }
+
+        // Try to load saved data first
+        bool loaded = LoadInventory();
+        
+        if (!loaded)
+        {
+            // No save found, use starting configuration
+            Debug.Log("[PlayerInventory] No save file, using starting configuration.");
+            credits = startingCredits;
+            storedItems.Clear();
+            
+            foreach (var itemData in startingItems)
+            {
+                if (itemData != null && !string.IsNullOrEmpty(itemData.itemId))
+                {
+                    if (storedItems.ContainsKey(itemData.itemId))
+                    {
+                        storedItems[itemData.itemId]++;
+                    }
+                    else
+                    {
+                        storedItems[itemData.itemId] = 1;
+                    }
+                }
+            }
+        }
+
+        UpdateCreditsUI();
+        RebuildItemsFromStorage();
+        RefreshUI();
+        
+        isInitialized = true;
+        Debug.Log($"[PlayerInventory] Initialized with {items.Count} items, {credits} credits");
+    }
+
+    /// <summary>
+    /// Force reload from save file
+    /// </summary>
+    [ContextMenu("Force Reload")]
+    public void ForceReload()
+    {
+        isInitialized = false;
+        InitializeDatabase();
+        InitializeInventory();
     }
 
     void OnApplicationQuit()
@@ -138,6 +205,8 @@ public class PlayerInventoryManager : MonoBehaviour
             inventoryPanel.SetActive(true);
         }
 
+        // Rebuild and refresh when opening
+        RebuildItemsFromStorage();
         RefreshUI();
 
         if (isInGameUI)
@@ -173,34 +242,100 @@ public class PlayerInventoryManager : MonoBehaviour
 
     #region Item Management
 
-    public void AddItem(ItemData itemData, int quantity = 1)
+    /// <summary>
+    /// Add items to inventory, respecting quantity limits
+    /// </summary>
+    /// <param name="itemData">The item to add</param>
+    /// <param name="quantity">Amount to add</param>
+    /// <returns>Amount that couldn't be added (overflow)</returns>
+    public int AddItem(ItemData itemData, int quantity = 1)
     {
-        if (itemData == null || string.IsNullOrEmpty(itemData.itemId)) return;
-
-        // Add to stored dictionary
-        if (storedItems.ContainsKey(itemData.itemId))
+        if (itemData == null)
         {
-            storedItems[itemData.itemId] += quantity;
+            Debug.LogError("[PlayerInventory] AddItem: itemData is null!");
+            return quantity;
         }
-        else
+        
+        if (string.IsNullOrEmpty(itemData.itemId))
         {
-            storedItems[itemData.itemId] = quantity;
-        }
-
-        // Rebuild UI items list
-        RebuildItemsFromStorage();
-
-        if (isOpen || !isInGameUI)
-        {
-            RefreshUI();
+            Debug.LogError($"[PlayerInventory] AddItem: itemId is empty for {itemData.itemName}!");
+            return quantity;
         }
 
-        if (autoSave)
+        int limit = itemData.quantityLimit > 0 ? itemData.quantityLimit : int.MaxValue;
+        int currentAmount = storedItems.ContainsKey(itemData.itemId) ? storedItems[itemData.itemId] : 0;
+        int spaceAvailable = limit - currentAmount;
+        int toAdd = Math.Min(quantity, spaceAvailable);
+        int overflow = quantity - toAdd;
+
+        if (toAdd > 0)
         {
-            SaveInventory();
+            if (storedItems.ContainsKey(itemData.itemId))
+            {
+                storedItems[itemData.itemId] += toAdd;
+            }
+            else
+            {
+                storedItems[itemData.itemId] = toAdd;
+            }
+
+            // Rebuild UI items list
+            RebuildItemsFromStorage();
+
+            if (isOpen || !isInGameUI)
+            {
+                RefreshUI();
+            }
+
+            if (autoSave)
+            {
+                SaveInventory();
+            }
+
+            Debug.Log($"[PlayerInventory] Added {toAdd}x {itemData.itemName} (Total: {storedItems[itemData.itemId]}/{limit})");
         }
 
-        Debug.Log($"[PlayerInventory] Added {quantity}x {itemData.itemName}");
+        if (overflow > 0)
+        {
+            Debug.LogWarning($"[PlayerInventory] Couldn't add {overflow}x {itemData.itemName} - at limit ({limit})");
+        }
+
+        return overflow;
+    }
+
+    /// <summary>
+    /// Check if we can add more of this item
+    /// </summary>
+    public bool CanAddItem(ItemData itemData, int quantity = 1)
+    {
+        if (itemData == null || string.IsNullOrEmpty(itemData.itemId)) return false;
+        
+        int limit = itemData.quantityLimit > 0 ? itemData.quantityLimit : int.MaxValue;
+        int currentAmount = storedItems.ContainsKey(itemData.itemId) ? storedItems[itemData.itemId] : 0;
+        
+        return currentAmount + quantity <= limit;
+    }
+
+    /// <summary>
+    /// Get current quantity of an item
+    /// </summary>
+    public int GetItemQuantity(ItemData itemData)
+    {
+        if (itemData == null || string.IsNullOrEmpty(itemData.itemId)) return 0;
+        return storedItems.ContainsKey(itemData.itemId) ? storedItems[itemData.itemId] : 0;
+    }
+
+    /// <summary>
+    /// Check if item is at max quantity
+    /// </summary>
+    public bool IsItemAtLimit(ItemData itemData)
+    {
+        if (itemData == null || string.IsNullOrEmpty(itemData.itemId)) return true;
+        
+        int limit = itemData.quantityLimit > 0 ? itemData.quantityLimit : int.MaxValue;
+        int currentAmount = storedItems.ContainsKey(itemData.itemId) ? storedItems[itemData.itemId] : 0;
+        
+        return currentAmount >= limit;
     }
 
     public void RemoveItem(InventoryItem item)
@@ -239,7 +374,11 @@ public class PlayerInventoryManager : MonoBehaviour
     {
         items.Clear();
 
-        if (itemDatabase == null) return;
+        if (itemDatabase == null)
+        {
+            Debug.LogError("[PlayerInventory] RebuildItemsFromStorage: ItemDatabase is null!");
+            return;
+        }
 
         foreach (var kvp in storedItems)
         {
@@ -248,7 +387,13 @@ public class PlayerInventoryManager : MonoBehaviour
             {
                 items.Add(new InventoryItem(itemData, kvp.Value));
             }
+            else
+            {
+                Debug.LogWarning($"[PlayerInventory] Item ID '{kvp.Key}' not found in database!");
+            }
         }
+        
+        Debug.Log($"[PlayerInventory] Rebuilt {items.Count} items from {storedItems.Count} stored entries");
     }
 
     #endregion
@@ -333,7 +478,7 @@ public class PlayerInventoryManager : MonoBehaviour
             string json = JsonUtility.ToJson(saveData, true);
             File.WriteAllText(SavePath, json);
 
-            Debug.Log($"[PlayerInventory] Saved to {SavePath}");
+            Debug.Log($"[PlayerInventory] Saved {storedItems.Count} items to {SavePath}");
         }
         catch (Exception e)
         {
@@ -347,32 +492,58 @@ public class PlayerInventoryManager : MonoBehaviour
         {
             if (!File.Exists(SavePath))
             {
-                Debug.Log("[PlayerInventory] No save file found.");
+                Debug.Log($"[PlayerInventory] No save file found at {SavePath}");
                 return false;
             }
 
             string json = File.ReadAllText(SavePath);
+            Debug.Log($"[PlayerInventory] Loading from file: {json}");
+            
             InventorySaveData saveData = JsonUtility.FromJson<InventorySaveData>(json);
+
+            if (saveData == null)
+            {
+                Debug.LogError("[PlayerInventory] Failed to parse save data!");
+                return false;
+            }
 
             credits = saveData.credits;
             storedItems.Clear();
 
-            foreach (var itemSave in saveData.items)
+            if (saveData.items != null)
             {
-                if (!string.IsNullOrEmpty(itemSave.itemId))
+                foreach (var itemSave in saveData.items)
                 {
-                    storedItems[itemSave.itemId] = itemSave.quantity;
+                    if (!string.IsNullOrEmpty(itemSave.itemId))
+                    {
+                        storedItems[itemSave.itemId] = itemSave.quantity;
+                        Debug.Log($"[PlayerInventory] Loaded item: {itemSave.itemId} x{itemSave.quantity}");
+                    }
                 }
             }
 
-            Debug.Log($"[PlayerInventory] Loaded {storedItems.Count} items, {credits} credits");
+            Debug.Log($"[PlayerInventory] Loaded {storedItems.Count} items, {credits} credits from {SavePath}");
             return true;
         }
         catch (Exception e)
         {
-            Debug.LogError($"[PlayerInventory] Failed to load: {e.Message}");
+            Debug.LogError($"[PlayerInventory] Failed to load: {e.Message}\n{e.StackTrace}");
             return false;
         }
+    }
+
+    public void ClearInventory()
+    {
+        storedItems.Clear();
+        credits = 0;
+        RebuildItemsFromStorage();
+        RefreshUI();
+        UpdateCreditsUI();
+        if (autoSave)
+        {
+            SaveInventory();
+        }
+        Debug.Log("[PlayerInventory] Inventory cleared.");
     }
 
     [ContextMenu("Delete Save File")]
@@ -391,13 +562,32 @@ public class PlayerInventoryManager : MonoBehaviour
         SaveInventory();
     }
 
+    [ContextMenu("Print Save Path")]
+    public void PrintSavePath()
+    {
+        Debug.Log($"[PlayerInventory] Save path: {SavePath}");
+        Debug.Log($"[PlayerInventory] File exists: {File.Exists(SavePath)}");
+    }
+
+    [ContextMenu("Print Current State")]
+    public void PrintCurrentState()
+    {
+        Debug.Log($"[PlayerInventory] Credits: {credits}");
+        Debug.Log($"[PlayerInventory] Stored items count: {storedItems.Count}");
+        foreach (var kvp in storedItems)
+        {
+            Debug.Log($"  - {kvp.Key}: {kvp.Value}");
+        }
+        Debug.Log($"[PlayerInventory] Display items count: {items.Count}");
+    }
+
     #endregion
 
     #region UI
 
     public void RefreshUI()
     {
-        foreach (var ui in uiInstances)
+        foreach (var ui in uiinstances)
         {
             if (ui != null)
             {
@@ -405,7 +595,7 @@ public class PlayerInventoryManager : MonoBehaviour
                 Destroy(ui.gameObject);
             }
         }
-        uiInstances.Clear();
+        uiinstances.Clear();
 
         if (itemUIPrefab == null || contentParent == null) return;
 
@@ -425,9 +615,11 @@ public class PlayerInventoryManager : MonoBehaviour
             {
                 ui.Setup(item);
                 ui.OnRightClick += HandleItemRightClick;
-                uiInstances.Add(ui);
+                uiinstances.Add(ui);
             }
         }
+        
+        Debug.Log($"[PlayerInventory] RefreshUI: Created {uiinstances.Count} UI elements");
     }
 
     private void HandleItemRightClick(InventoryItemUI ui)

@@ -13,6 +13,7 @@ public class InventoryItemUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text priceText;
+    [SerializeField] private TMP_Text quantityText;
 
     /// <summary>
     /// Event fired when item is right-clicked
@@ -39,20 +40,38 @@ public class InventoryItemUI : MonoBehaviour, IPointerClickHandler
 
         gameObject.SetActive(true);
 
+        // Icon
         if (iconImage != null)
         {
             iconImage.sprite = inventoryItem.data.icon;
             iconImage.enabled = inventoryItem.data.icon != null;
         }
 
+        // Name
         if (nameText != null)
         {
             nameText.text = inventoryItem.data.itemName;
         }
 
+        // Price (total for stack)
         if (priceText != null)
         {
             priceText.text = $"{inventoryItem.TotalSellValue}c";
+        }
+
+        // Quantity
+        if (quantityText != null)
+        {
+            if (inventoryItem.quantity > 1)
+            {
+                quantityText.gameObject.SetActive(true);
+                quantityText.text = $"x{inventoryItem.quantity}";
+            }
+            else
+            {
+                // Hide quantity text if only 1
+                quantityText.gameObject.SetActive(false);
+            }
         }
     }
 

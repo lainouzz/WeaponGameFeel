@@ -16,3 +16,7 @@ MonoBehaviour:
   itemName: Item1
   icon: {fileID: 21300000, guid: 2f26d21f6fe2bf645b95bcfaa10dfbf7, type: 3}
   sellPrice: 250
+  quantity: 0
+  quantityLimit: 5
+  itemType: 3
+  rarity: 2
