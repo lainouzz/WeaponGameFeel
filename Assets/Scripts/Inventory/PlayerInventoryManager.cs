@@ -184,6 +184,11 @@ public class PlayerInventoryManager : MonoBehaviour
         {
             ToggleInventory();
         }
+        if (!isInGameUI)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
     }
 
     #region Inventory Toggle
@@ -535,7 +540,7 @@ public class PlayerInventoryManager : MonoBehaviour
     public void ClearInventory()
     {
         storedItems.Clear();
-        credits = 0;
+        //credits = 0;
         RebuildItemsFromStorage();
         RefreshUI();
         UpdateCreditsUI();

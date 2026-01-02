@@ -16,11 +16,17 @@ public class Debugging : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(Keyboard.current != null && Keyboard.current.xKey.wasPressedThisFrame)
+        {
+            debugMode = true;
+        }
+
         if(Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame)
         {
-           
+            isPlayerDead = true;
+            DebugClearInvOnDead();
         }
-        DebugClearInvOnDead();
+        
     }
 
     public void DebugClearInvOnDead()
