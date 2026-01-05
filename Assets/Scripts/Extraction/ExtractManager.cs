@@ -9,6 +9,7 @@ public class ExtractManager : MonoBehaviour
     public bool isExtracting = false;
 
     [SerializeField] private float extractTimer = 10f; // default length
+    [SerializeField] private float defaultExtractTime = 10f;
 
     public GameObject extractUI;
     public TMP_Text extractTimerText;
@@ -31,7 +32,7 @@ public class ExtractManager : MonoBehaviour
     void Update()
     {
         // Start extraction when entering zone
-        if (currentExtractionZone.isInExtractZone && !isExtracting)
+        if (currentExtractionZone != null && currentExtractionZone.isInExtractZone && !isExtracting)
         {
             StartExtractTimer();
         }
@@ -40,21 +41,22 @@ public class ExtractManager : MonoBehaviour
         if (isExtracting)
         {
             extractTimer -= Time.deltaTime;
-            extractTimerText.text = extractTimer.ToString("F2");
-            Debug.Log("Extracting in: " + extractTimer);
+
+            if (extractTimerText != null)
+            {
+                extractTimerText.text = extractTimer.ToString("F2");
+            }
 
             if (extractTimer <= 0f)
             {
-                isExtracting = false;
                 ExtractPlayer();
+                StopExtractTimer();
             }
 
-            // Optional: if player leaves zone, cancel extraction
-            if (!currentExtractionZone.isInExtractZone)
+            // If player leaves zone, stop/cancel extraction
+            if (currentExtractionZone != null && !currentExtractionZone.isInExtractZone)
             {
-                isExtracting = false;
-                // Optionally reset timer
-                //extractTimer = 10f;
+                StopExtractTimer();
             }
         }
     }
@@ -62,16 +64,36 @@ public class ExtractManager : MonoBehaviour
     public void StartExtractTimer()
     {
         isExtracting = true;
-        // Optionally set initial time here
-        extractTimer = 10f;
+        extractTimer = defaultExtractTime;
+
+        if (extractUI != null)
+        {
+            extractUI.SetActive(true);
+        }
+    }
+
+    public void StopExtractTimer()
+    {
+        isExtracting = false;
+        extractTimer = defaultExtractTime;
+
+        if (extractUI != null)
+        {
+            extractUI.SetActive(false);
+        }
+
+        if (extractTimerText != null)
+        {
+            extractTimerText.text = string.Empty;
+        }
     }
 
     private void ExtractPlayer()
     {
-        if (currentExtractionZone.isInExtractZone)
+        if (currentExtractionZone != null && currentExtractionZone.isInExtractZone)
         {
-            Debug.Log("EXTRACTED");
             SceneManager.LoadScene("MainMenu");
+            PlayerInventoryManager.instance.SaveInventory();
         }
     }
 }

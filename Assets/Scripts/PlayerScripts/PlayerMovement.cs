@@ -41,6 +41,7 @@ public class PlayerMovement : MonoBehaviour
     public bool canJump;
     public bool isSprinting;
     public bool isCrouching;
+    public bool canMove = true;
 
     private Vector3 velocity;
     private Vector3 moveDirection;
@@ -57,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsSprinting => isSprinting;
     public bool IsCrouching => isCrouching;
     public bool IsMoving => moveDirection.magnitude > 0.1f;
+    public bool CanMove => canMove;
 
     private GameInput gameInput;
     private CharacterController controller;
@@ -76,6 +78,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCrouchStarted(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
+        if (!canMove) return;
         isCrouching = true;
         isSprinting = false; // Can't sprint while crouching
     }
@@ -91,7 +94,7 @@ public class PlayerMovement : MonoBehaviour
         HandleCrouch();
         UpdateFootsteps();
 
-        if (canJump)
+        if (canJump && canMove)
         {
             HandleJump();
         }
@@ -99,6 +102,28 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
+        // If movement is disabled, only apply gravity
+        if (!canMove)
+        {
+            moveDirection = Vector3.zero;
+            isSprinting = false;
+            
+            // Still apply gravity
+            velocity.y += gravityScale * Time.deltaTime;
+            controller.Move(velocity * Time.deltaTime);
+
+            if (controller.isGrounded && velocity.y < 0)
+            {
+                isGrounded = true;
+                velocity.y = -2f;
+            }
+            else
+            {
+                isGrounded = false;
+            }
+            return;
+        }
+
         // Check sprint input
         bool sprintPressed = gameInput.Player.Sprint.IsPressed();
         isSprinting = sprintPressed && !isCrouching && isGrounded;

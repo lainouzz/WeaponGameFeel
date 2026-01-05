@@ -90,6 +90,14 @@ public class Weapon : MonoBehaviour
     [Tooltip("Time to holster/put away this weapon")]
     public float holsterTime = 0.3f;
 
+    [Header("Holster Position (Visual)")]
+    [Tooltip("Position when holstered")]
+    public Vector3 holsterPosition = new Vector3(9.99999142f, 300.000061f, 38.7737503f);
+    [Tooltip("Rotation when holstered (Euler angles)")]
+    public Vector3 holsterRotation = Vector3.zero;
+    [Tooltip("Speed to move to/from holster position")]
+    public float holsterMoveSpeed = 5f;
+
     //recoil/inertia config (visual weapon kick)
     [Header("Visual Weapon Recoil")]
     public float recoilImpulePitch;
@@ -173,6 +181,10 @@ public class Weapon : MonoBehaviour
     private Vector3 currentPositionOffset; // Current smoothed position offset
     private Quaternion hipRotation;
 
+    // Holster state
+    private bool isHolstered;
+    private float holsterLerpT; // 0 = ready, 1 = holstered
+
     // Ammo state
     private int currentAmmo;
     private int reserveAmmo;
@@ -193,6 +205,7 @@ public class Weapon : MonoBehaviour
     public float MagazineInsertTimePercent => magazineInsertTimePercent;
     public bool CanCancelReload => canCancelReload;
     public bool IsAiming => isAiming;
+    public bool IsHolstered => isHolstered;
     public Inspect InspectComponent => inspectComponent;
 
     // Legacy property for backwards compatibility
@@ -311,6 +324,7 @@ public class Weapon : MonoBehaviour
         if (stateMachine.IsInState(WeaponStateType.Switching)) return;
         if (stateMachine.IsInState(WeaponStateType.Drawing)) return;
         if (stateMachine.IsInState(WeaponStateType.Holstering)) return;
+        if (isHolstered) return; // Can't aim while holstered
         
         isAiming = true;
     }
@@ -325,6 +339,19 @@ public class Weapon : MonoBehaviour
     {
         // Don't run until properly initialized
         if (!isInitialized) return;
+
+        // Check for holster toggle input (H key)
+        if (Keyboard.current != null && Keyboard.current.hKey.wasPressedThisFrame)
+        {
+            ToggleHolster();
+        }
+
+        // If holstered, skip most weapon logic
+        if (isHolstered || holsterLerpT > 0.1f)
+        {
+            UpdateHolsterPosition();
+            return;
+        }
 
         // Update state machine (handles input and state transitions)
         stateMachine.Update();
@@ -358,6 +385,9 @@ public class Weapon : MonoBehaviour
 
         // Update spread recovery
         UpdateSpreadRecovery();
+
+        // Update holster transition (for unholstering)
+        UpdateHolsterPosition();
     }
 
     #region State Machine Interface Methods
@@ -912,4 +942,66 @@ public class Weapon : MonoBehaviour
             StopAutoMuzzle();
         }
     }
+
+    #region Holster System
+
+    public void ToggleHolster()
+    {
+        if (isHolstered)
+        {
+            Unholster();
+        }
+        else
+        {
+            Holster();
+        }
+    }
+
+    public void Holster()
+    {
+        if (isHolstered) return;
+        
+        isHolstered = true;
+        isAiming = false;
+        
+        // Stop any muzzle flash
+        StopMuzzleFlash();
+        
+        Debug.Log("[Weapon] Holstering weapon");
+    }
+
+    public void Unholster()
+    {
+        if (!isHolstered) return;
+        
+        isHolstered = false;
+        Debug.Log("[Weapon] Unholstering weapon");
+    }
+
+    private void UpdateHolsterPosition()
+    {
+        float dt = Time.deltaTime;
+        
+        // Smoothly interpolate holster lerp value
+        float targetLerp = isHolstered ? 1f : 0f;
+        holsterLerpT = Mathf.MoveTowards(holsterLerpT, targetLerp, holsterMoveSpeed * dt);
+        
+        // If fully unholstered, let normal weapon logic handle position
+        if (holsterLerpT < 0.01f)
+        {
+            holsterLerpT = 0f;
+            return;
+        }
+        
+        // Calculate holster position/rotation
+        Vector3 targetPos = Vector3.Lerp(originalPosition, holsterPosition, holsterLerpT);
+        Quaternion holsterRot = Quaternion.Euler(holsterRotation);
+        Quaternion targetRot = Quaternion.Slerp(originalRotation, holsterRot, holsterLerpT);
+        
+        // Apply
+        transform.localPosition = targetPos;
+        transform.localRotation = targetRot;
+    }
+
+    #endregion
 }
