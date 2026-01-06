@@ -4661,6 +4661,7 @@ GameObject:
   - component: {fileID: 1246288981}
   - component: {fileID: 1246288980}
   - component: {fileID: 1246288982}
+  - component: {fileID: 1246288983}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4709,6 +4710,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   debugMode: 0
   isPlayerDead: 0
+  debugCreditAmount: 1000
+--- !u!114 &1246288983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1246288979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81ff41f460dd4334297c775546962915, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  healthRegenRate: 5
+  healthRegenDelay: 3
+  currentHealth: 0
+  maxStamina: 100
+  staminaRegenRate: 10
+  staminaRegenDelay: 2
+  currentStamina: 0
+  healthUpgradeAmount: 20
+  staminaUpgradeAmount: 15
+  upgradeCost: 100
+  upgradeMultiplier: 1.2
 --- !u!1001 &1253284089
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8934,14 +8960,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2087913584}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0.9999969, z: -0, w: -0.002486065}
   m_LocalPosition: {x: 13.94, y: 1.276, z: 25.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 330585546}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -180.285, z: 0}
 --- !u!114 &2087913589
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
+using static StatsManager;
 
 /// <summary>
 /// Connects player inventory and vendor - handles item transfers and selling
@@ -10,12 +11,11 @@ public class ReforgeStationMenuController : MonoBehaviour
     [SerializeField] private PlayerInventoryManager playerInventory;
     [SerializeField] private VendorSellManager vendorSellManager;
 
-    [Header("Upgrade System (Debug)")]
-    [SerializeField] private TMP_Text upgradeDebugText;
-    [SerializeField] private int upgradeBaseCost = 100;
-    
-    private int currentUpgradeLevel = 0;
-    private int maxUpgradeLevel = 10;
+    [Header("Stat Upgrade UI")]
+    [SerializeField] private TMP_Text healthUpgradeCostText;
+    [SerializeField] private TMP_Text healthLevelText;
+    [SerializeField] private TMP_Text staminaUpgradeCostText;
+    [SerializeField] private TMP_Text staminaLevelText;
 
     void OnEnable()
     {
@@ -28,6 +28,13 @@ public class ReforgeStationMenuController : MonoBehaviour
         {
             vendorSellManager.OnSellConfirmed += HandleSellConfirmed;
         }
+
+        if (StatsManager.Instance != null)
+        {
+            StatsManager.Instance.OnStatsChanged += UpdateStatUpgradeUI;
+        }
+        
+        UpdateStatUpgradeUI();
     }
 
     void OnDisable()
@@ -41,11 +48,16 @@ public class ReforgeStationMenuController : MonoBehaviour
         {
             vendorSellManager.OnSellConfirmed -= HandleSellConfirmed;
         }
+
+        if (StatsManager.Instance != null)
+        {
+            StatsManager.Instance.OnStatsChanged -= UpdateStatUpgradeUI;
+        }
     }
 
     void Start()
     {
-        UpdateUpgradeDebugText();
+        UpdateStatUpgradeUI();
     }
 
     private void HandleTransferToVendor(InventoryItem item)
@@ -73,45 +85,78 @@ public class ReforgeStationMenuController : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by Upgrade button in UI
+    /// Called by Health Upgrade button in UI
     /// </summary>
-    public void OnUpgradeButtonClicked()
+    public void OnUpgradeHealthClicked()
     {
-        if (playerInventory == null) return;
-
-        if (currentUpgradeLevel >= maxUpgradeLevel)
+        if (StatsManager.Instance != null)
         {
-            Debug.Log("[ReforgeStation] Already at max upgrade level!");
-            return;
-        }
-
-        int cost = GetUpgradeCost();
-
-        if (playerInventory.SpendCredits(cost))
-        {
-            currentUpgradeLevel++;
-            Debug.Log($"[ReforgeStation] Upgraded to level {currentUpgradeLevel}! Cost: {cost}");
-            UpdateUpgradeDebugText();
-        }
-        else
-        {
-            Debug.Log($"[ReforgeStation] Not enough credits! Need {cost}, have {playerInventory.Credits}");
+            int costBefore = StatsManager.Instance.GetUpgradeCost(StatType.Health);
+            int creditsBefore = PlayerInventoryManager.instance?.Credits ?? 0;
+            
+            bool success = StatsManager.Instance.TryUpgradeStat(StatType.Health);
+            
+            if (success)
+            {
+                int creditsAfter = PlayerInventoryManager.instance?.Credits ?? 0;
+                Debug.Log($"[ReforgeStation] Health upgraded! Cost: {costBefore}c | Credits: {creditsBefore} -> {creditsAfter}");
+            }
+            
+            UpdateStatUpgradeUI();
         }
     }
 
-    private int GetUpgradeCost()
+    /// <summary>
+    /// Called by Stamina Upgrade button in UI
+    /// </summary>
+    public void OnUpgradeStaminaClicked()
     {
-        // Cost increases with each level
-        return upgradeBaseCost * (currentUpgradeLevel + 1);
+        if (StatsManager.Instance != null)
+        {
+            int costBefore = StatsManager.Instance.GetUpgradeCost(StatType.Stamina);
+            int creditsBefore = PlayerInventoryManager.instance?.Credits ?? 0;
+            
+            bool success = StatsManager.Instance.TryUpgradeStat(StatType.Stamina);
+            
+            if (success)
+            {
+                int creditsAfter = PlayerInventoryManager.instance?.Credits ?? 0;
+                Debug.Log($"[ReforgeStation] Stamina upgraded! Cost: {costBefore}c | Credits: {creditsBefore} -> {creditsAfter}");
+            }
+            
+            UpdateStatUpgradeUI();
+        }
     }
 
-    private void UpdateUpgradeDebugText()
+    private void UpdateStatUpgradeUI()
     {
-        if (upgradeDebugText != null)
+        if (StatsManager.Instance == null) return;
+
+        // Health upgrade UI
+        if (healthUpgradeCostText != null)
         {
-            int nextCost = currentUpgradeLevel < maxUpgradeLevel ? GetUpgradeCost() : 0;
-            string costText = currentUpgradeLevel < maxUpgradeLevel ? $"Next: {nextCost}c" : "MAX LEVEL";
-            upgradeDebugText.text = $"Level: {currentUpgradeLevel}/{maxUpgradeLevel}\n{costText}";
+            int cost = StatsManager.Instance.GetUpgradeCost(StatType.Health);
+            healthUpgradeCostText.text = $"Cost: {cost}c";
+        }
+
+        if (healthLevelText != null)
+        {
+            int level = StatsManager.Instance.GetUpgradeLevel(StatType.Health);
+            float maxHP = StatsManager.Instance.Health?.MaxValue ?? 0f;
+            healthLevelText.text = $"Health Lv.{level} ({maxHP:F0} HP)";
+        }
+
+        // Stamina upgrade UI
+        if (staminaUpgradeCostText != null)
+        {
+            int cost = StatsManager.Instance.GetUpgradeCost(StatType.Stamina);
+            staminaUpgradeCostText.text = $"Cost: {cost}c";
+        }
+
+        if (staminaLevelText != null)
+        {
+            int level = StatsManager.Instance.GetUpgradeLevel(StatType.Stamina);
+            staminaLevelText.text = $"Stamina Lv.{level}";
         }
     }
 }
