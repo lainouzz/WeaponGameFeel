@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, ITarget
 {
     [Header("Movement")]
     public float walkSpeed = 5f;
@@ -59,6 +59,11 @@ public class PlayerMovement : MonoBehaviour
     public bool IsCrouching => isCrouching;
     public bool IsMoving => moveDirection.magnitude > 0.1f;
     public bool CanMove => canMove;
+
+    public Transform targetTransform => transform;
+    public Vector3 position => transform.position;
+    public Quaternion rotation => transform.rotation;
+    public bool IsAlive => true;
 
     private GameInput gameInput;
     private CharacterController controller;

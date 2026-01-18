@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using Random = UnityEngine.Random;
 
 public class Weapon : MonoBehaviour
 {
@@ -691,8 +692,13 @@ public class Weapon : MonoBehaviour
             // Apply physics force to hit object
             ApplyImpactForce(hit, ray.direction);
 
-            // Try to deal damage if target has a health component
-            hit.collider.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            // Try to deal damage if target has a health component          
+            if (hit.collider.TryGetComponent<IDamagable>(out var damagable))
+            {
+                damage = Random.Range(damage * 0.9f, damage * 1.1f); // Add slight damage variation
+                damagable.TakeDamage(damage);
+                hit.collider.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+            }
         }
         else
         {
