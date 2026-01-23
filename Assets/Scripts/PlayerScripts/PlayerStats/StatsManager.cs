@@ -1,5 +1,6 @@
 using System;
-using Unity.VisualScripting.Antlr3.Runtime.Tree;
+using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class StatsManager : MonoBehaviour
@@ -10,13 +11,11 @@ public class StatsManager : MonoBehaviour
     public float maxHealth = 100f;
     public float healthRegenRate = 5f;
     public float healthRegenDelay = 3f;
-    public float currentHealth;
 
     [Header("Player Stamina")]
     public float maxStamina = 100f;
     public float staminaRegenRate = 10f;
     public float staminaRegenDelay = 2f;
-    public float currentStamina;
 
     [Header("Player Damage")]
     public float baseDamage = 10f;
@@ -29,8 +28,13 @@ public class StatsManager : MonoBehaviour
     [SerializeField] private int upgradeCost = 100;
     [SerializeField] private float upgradeMultiplier = 1.2f;
 
+    [Header("Save Settings")]
+    [SerializeField] private string saveFileName = "playerstats.json";
+    private string SavePath => Path.Combine(Application.persistentDataPath, saveFileName);
+
     public HealthStat Health { get; private set; }
     public StaminaStat Stamina { get; private set; }
+
     public DamageStat Damage { get; private set; }
 
     private int HealthUpgradeLevel = 0;
@@ -38,7 +42,7 @@ public class StatsManager : MonoBehaviour
     private int DamageUpgradeLevel = 0;
 
     public event Action OnStatsChanged;
-    public event Action<String> OnUpgradeFailed;
+    public event Action<string> OnUpgradeFailed;
 
     private void Awake()
     {
@@ -49,25 +53,29 @@ public class StatsManager : MonoBehaviour
         }
         Instance = this;
         InitializeStats();
+        LoadUpgrades();
     }
 
     private void InitializeStats()
     {
+        // Init health
         Health = new HealthStat(maxHealth, maxHealth);
-        currentHealth = maxHealth;
+        Health.SetMax(maxHealth, preserveCurrent: false);  // Ensures init at full
+
+        // Init stamina
         Stamina = new StaminaStat(maxStamina, maxStamina);
-        currentStamina = maxStamina;
+        Stamina.SetMax(maxStamina, preserveCurrent: false);
 
         Health.OnDeath += HandlePlayerDeath;
         Health.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
         Stamina.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
-        Damage.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
     }
 
     // Update is called once per frame
     void Update()
     {
         Health.Regenerate(Time.deltaTime);
+        Stamina.Regenerate(Time.deltaTime);
     }
 
     public void TakeDamage(float damage)
@@ -82,7 +90,7 @@ public class StatsManager : MonoBehaviour
     }
     public void UseStamina(float amount)
     {
-        Stamina?.Consume(amount);
+        Stamina.Remove(amount);
         Debug.Log($"[Stats] Used {amount} stamina. Stamina: {Stamina.CurrentValue}/{Stamina.MaxValue}");
     }
     public float GetFinalDamage(float baseDamage)
@@ -119,41 +127,42 @@ public class StatsManager : MonoBehaviour
     public bool TryUpgradeStat(StatType statType)
     {
         int cost = GetUpgradeCost(statType);
-        
-        if(PlayerInventoryManager.instance == null)
+
+        if (PlayerLoadSaveManager.instance == null)
         {
-            OnUpgradeFailed?.Invoke("PlayerInventoryManager instance is null.");
+            OnUpgradeFailed?.Invoke("PlayerLoadSaveManager instance is null.");
             return false;
         }
-
-        if(PlayerInventoryManager.instance.Credits < cost)
+        if (PlayerLoadSaveManager.instance.Credits < cost)
         {
             OnUpgradeFailed?.Invoke($"Not enough credits! Need {cost}c");
-            Debug.Log($"[Stats] Upgrade failed - need {cost}c, have {PlayerInventoryManager.instance.Credits}c");
+            Debug.Log($"[Stats] Upgrade failed - need {cost}c, have {PlayerLoadSaveManager.instance.Credits}c");
             return false;
         }
 
-        PlayerInventoryManager.instance.SpendCredits(cost);
+        PlayerLoadSaveManager.instance.SpendCredits(cost);
 
         switch (statType)
         {
             case StatType.Health:
-                Health.UpgradeMax(healthUpgradeAmount);
+                Health.UpgradeMax(healthUpgradeAmount);  // Keeps healing on upgrade
                 HealthUpgradeLevel++;
-                Debug.Log($"[Stats] Upgraded Health to level {HealthUpgradeLevel}. New Max Health: {maxHealth}");
+                Debug.Log($"[Stats] Upgraded Health to level {HealthUpgradeLevel}. New Max Health: {Health.MaxValue}");
                 break;
             case StatType.Stamina:
                 Stamina.UpgradeMax(staminaUpgradeAmount);
                 StaminaUpgradeLevel++;
-                Debug.Log($"[Stats] Upgraded Stamina to level {StaminaUpgradeLevel}. New Max Stamina: {maxStamina}");
+                Debug.Log($"[Stats] Upgraded Stamina to level {StaminaUpgradeLevel}. New Max Stamina: {Stamina.MaxValue}");
                 break;
             case StatType.Damage:
-                damageMultiplier += damageUpgradeAmount; // Example increment
+                damageMultiplier += damageUpgradeAmount;
                 DamageUpgradeLevel++;
                 Debug.Log($"[Stats] Upgraded Damage to level {DamageUpgradeLevel}. New Damage Multiplier: {damageMultiplier}");
                 break;
         }
+
         OnStatsChanged?.Invoke();
+        SaveUpgrades();  // Auto-save
         return true;
     }
 
@@ -162,6 +171,103 @@ public class StatsManager : MonoBehaviour
         // Could trigger death screen, respawn, etc.
         Debug.Log("[Stats] Player died!");
         PlayerBehavior.Instance.OnDeath();
+    }
+
+
+    public IEnumerable<StatType> GetAllStatTypes()
+    {
+        return Enum.GetValues(typeof(StatType)) as StatType[];
+    }
+
+    public void ApplyUpgrades()
+    {
+        // Health: Set total max, preserve current
+        float totalHealthAdded = healthUpgradeAmount * HealthUpgradeLevel;
+        Health.SetMax(maxHealth + totalHealthAdded, preserveCurrent: true);
+
+        // Stamina: Same
+        float totalStaminaAdded = staminaUpgradeAmount * StaminaUpgradeLevel;
+        Stamina.SetMax(maxStamina + totalStaminaAdded, preserveCurrent: true);
+
+        // Damage: Direct field update (no current to preserve)
+        damageMultiplier = 1.5f + (damageUpgradeAmount * DamageUpgradeLevel);
+    }
+
+    public void SetUpgradeLevel(StatType statType, int level)
+    {
+        switch (statType)
+        {
+            case StatType.Health: HealthUpgradeLevel = level; break;
+            case StatType.Stamina: StaminaUpgradeLevel = level; break;
+            case StatType.Damage: DamageUpgradeLevel = level; break;
+        }
+
+        ApplyUpgrades();
+    }
+
+    public void SaveUpgrades()
+    {
+        try
+        {
+            var data = new PlayerStatsSaveData();
+
+            foreach (StatType type in GetAllStatTypes())
+            {
+                data.upgrades.Add(new StatUpgradeSave
+                {
+                    StatType = type,
+                    upgradeLevel = GetUpgradeLevel(type)
+                });
+            }
+
+            // Save currents
+            data.currentHealth = Health.CurrentValue;
+            data.currentStamina = Stamina.CurrentValue;
+
+            string json = JsonUtility.ToJson(data, true);
+            File.WriteAllText(SavePath, json);
+
+            Debug.Log($"[Stats] Saved upgrades to {SavePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Stats] Failed to save: {e.Message}");
+        }
+    }
+
+    public void LoadUpgrades()
+    {
+        if (!File.Exists(SavePath))
+        {
+            Debug.Log("[Stats] No save file found, using defaults.");
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(SavePath);
+            var data = JsonUtility.FromJson<PlayerStatsSaveData>(json);
+
+            foreach (var upgrade in data.upgrades)
+            {
+                SetUpgradeLevel(upgrade.StatType, upgrade.upgradeLevel);
+            }
+
+            // Restore currents (clamped after max applied)
+            Health.SetCurrent(data.currentHealth);
+            Stamina.SetCurrent(data.currentStamina);
+
+            Debug.Log($"[Stats] Loaded upgrades from {SavePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Stats] Failed to load: {e.Message}");
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveUpgrades();
     }
 
     void OnDestroy()

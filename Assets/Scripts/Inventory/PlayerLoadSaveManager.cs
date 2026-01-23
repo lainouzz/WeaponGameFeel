@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
 /// Manages the player's inventory and credits with save/load support
 /// </summary>
-public class PlayerInventoryManager : MonoBehaviour
+public class PlayerLoadSaveManager : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private GameObject inventoryPanel;
@@ -48,7 +49,7 @@ public class PlayerInventoryManager : MonoBehaviour
     // Stored items dictionary (persistent)
     private Dictionary<string, int> storedItems = new Dictionary<string, int>();
 
-    public static PlayerInventoryManager instance { get; private set; }
+    public static PlayerLoadSaveManager instance { get; private set; }
 
     // Active session items (for UI display)
     private List<InventoryItem> items = new List<InventoryItem>();
@@ -150,6 +151,8 @@ public class PlayerInventoryManager : MonoBehaviour
         isInitialized = true;
         Debug.Log($"[PlayerInventory] Initialized with {items.Count} items, {credits} credits");
     }
+
+
 
     /// <summary>
     /// Force reload from save file
@@ -491,6 +494,7 @@ public class PlayerInventoryManager : MonoBehaviour
         }
     }
 
+
     public bool LoadInventory()
     {
         try
@@ -565,6 +569,7 @@ public class PlayerInventoryManager : MonoBehaviour
     public void ForceSave()
     {
         SaveInventory();
+        //SaveStats();
     }
 
     [ContextMenu("Print Save Path")]
@@ -572,6 +577,7 @@ public class PlayerInventoryManager : MonoBehaviour
     {
         Debug.Log($"[PlayerInventory] Save path: {SavePath}");
         Debug.Log($"[PlayerInventory] File exists: {File.Exists(SavePath)}");
+        Debug.Log($"[PlayerInventory] Save file content: {(File.Exists(SavePath) ? File.ReadAllText(SavePath) : "N/A")}");
     }
 
     [ContextMenu("Print Current State")]

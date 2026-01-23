@@ -66,6 +66,55 @@ public abstract class BaseStat
         OnValueChanged?.Invoke(currentValue, maxValue);
     }
 
+    public virtual void SetMax(float newMax, bool preserveCurrent = true)
+    {
+        float oldMax = maxValue;
+        maxValue = Mathf.Max(0f, newMax);  // Avoid negative max
+
+        float oldCurrent = currentValue;
+        if (preserveCurrent)
+        {
+            currentValue = Mathf.Clamp(currentValue, 0f, maxValue);
+        }
+        else
+        {
+            currentValue = maxValue; 
+        }
+
+        if (currentValue != oldCurrent || maxValue != oldMax)
+        {
+            OnValueChanged?.Invoke(currentValue, maxValue);
+        }
+
+        // Trigger filled/depleted if crossed thresholds
+        if (currentValue >= maxValue && oldCurrent < oldMax)
+        {
+            OnFilled?.Invoke();
+        }
+        if (currentValue <= 0 && oldCurrent > 0)
+        {
+            OnDepleted?.Invoke();
+        }
+    }
+
+    public virtual void SetCurrent(float value)
+    {
+        float oldValue = currentValue;
+        currentValue = Mathf.Clamp(Mathf.RoundToInt(value), 0, Mathf.RoundToInt(maxValue));
+        if (currentValue != oldValue)
+        {
+            OnValueChanged?.Invoke(currentValue, maxValue);
+        }
+        if (currentValue >= maxValue && oldValue < maxValue)
+        {
+            OnFilled?.Invoke();
+        }
+        if (currentValue <= 0 && oldValue > 0)
+        {
+            OnDepleted?.Invoke();
+        }
+    }
+
     public virtual void SetToZero()
     {
         currentValue = 0;

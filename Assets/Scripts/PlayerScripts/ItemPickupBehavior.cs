@@ -10,14 +10,14 @@ public class ItemPickupBehavior : MonoBehaviour
     public float pickupRange = 20f;
 
     private GameInput gameInput;
-    private PlayerInventoryManager playerInventoryManager;
+    private PlayerLoadSaveManager PlayerLoadSaveManager;
     private float raycastTimer;
     private ItemPickup currentItem;
 
     void Awake()
     {
         gameInput = new GameInput();
-        playerInventoryManager = FindAnyObjectByType<PlayerInventoryManager>();
+        PlayerLoadSaveManager = FindAnyObjectByType<PlayerLoadSaveManager>();
     }
 
     void OnEnable()
@@ -66,13 +66,13 @@ public class ItemPickupBehavior : MonoBehaviour
                     pickupText.gameObject.SetActive(true);
                     
                     // Show quantity info if at limit
-                    if (playerInventoryManager != null && playerInventoryManager.IsItemAtLimit(pickup.itemData))
+                    if (PlayerLoadSaveManager != null && PlayerLoadSaveManager.IsItemAtLimit(pickup.itemData))
                     {
                         pickupText.text = $"{pickup.itemData.itemName} (FULL)";
                     }
                     else
                     {
-                        int current = playerInventoryManager != null ? playerInventoryManager.GetItemQuantity(pickup.itemData) : 0;
+                        int current = PlayerLoadSaveManager != null ? PlayerLoadSaveManager.GetItemQuantity(pickup.itemData) : 0;
                         int limit = pickup.itemData.quantityLimit;
                         pickupText.text = $"Press E to pick up {pickup.itemData.itemName} ({current}/{limit})";
                     }
@@ -92,16 +92,16 @@ public class ItemPickupBehavior : MonoBehaviour
     private void PickupItem()
     {
         if (currentItem == null || currentItem.itemData == null) return;
-        if (playerInventoryManager == null) return;
+        if (PlayerLoadSaveManager == null) return;
 
         // Check if we can pick up
-        if (playerInventoryManager.IsItemAtLimit(currentItem.itemData))
+        if (PlayerLoadSaveManager.IsItemAtLimit(currentItem.itemData))
         {
             Debug.Log($"Cannot pick up {currentItem.itemData.itemName} - inventory full for this item!");
             return;
         }
 
-        int overflow = playerInventoryManager.AddItem(currentItem.itemData);
+        int overflow = PlayerLoadSaveManager.AddItem(currentItem.itemData);
         
         if (overflow == 0)
         {

@@ -56,7 +56,7 @@ public class SlotMachine : MonoBehaviour
     private bool isSpinning;
     private bool isPlayerNear;
     private bool isUIOpen;
-    private PlayerInventoryManager playerInventory;
+    private PlayerLoadSaveManager playerInventory;
     private PlayerMovement playerMovement;
     private GameInput gameInput;
     private Transform playerTransform;
@@ -74,7 +74,7 @@ public class SlotMachine : MonoBehaviour
 
     void Start()
     {
-        playerInventory = PlayerInventoryManager.instance;
+        playerInventory = PlayerLoadSaveManager.instance;
         
         // Find player transform and movement
         GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -218,7 +218,7 @@ public class SlotMachine : MonoBehaviour
     {
         if (playerInventory == null)
         {
-            playerInventory = PlayerInventoryManager.instance;
+            playerInventory = PlayerLoadSaveManager.instance;
             if (debugMode) Debug.Log($"[SlotMachine] Re-fetching PlayerInventory: {(playerInventory != null ? "Found" : "Still NULL")}");
         }
 
@@ -291,7 +291,7 @@ public class SlotMachine : MonoBehaviour
 
         if (playerInventory == null)
         {
-            Debug.LogError("[SlotMachine] No PlayerInventoryManager found!");
+            Debug.LogError("[SlotMachine] No PlayerLoadSaveManager found!");
             if (resultText != null) resultText.text = "No inventory found!";
             return;
         }

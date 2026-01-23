@@ -8,7 +8,7 @@ using static StatsManager;
 public class ReforgeStationMenuController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private PlayerInventoryManager playerInventory;
+    [SerializeField] private PlayerLoadSaveManager playerInventory;
     [SerializeField] private VendorSellManager vendorSellManager;
 
     [Header("Stat Upgrade UI")]
@@ -77,16 +77,16 @@ public class ReforgeStationMenuController : MonoBehaviour
         if (StatsManager.Instance != null)
         {
             int costBefore = StatsManager.Instance.GetUpgradeCost(StatType.Health);
-            int creditsBefore = PlayerInventoryManager.instance?.Credits ?? 0;
+            int creditsBefore = PlayerLoadSaveManager.instance?.Credits ?? 0;
             
             bool success = StatsManager.Instance.TryUpgradeStat(StatType.Health);
             
             if (success)
             {
-                int creditsAfter = PlayerInventoryManager.instance?.Credits ?? 0;
+                int creditsAfter = PlayerLoadSaveManager.instance?.Credits ?? 0;
                 Debug.Log($"[ReforgeStation] Health upgraded! Cost: {costBefore}c | Credits: {creditsBefore} -> {creditsAfter}");
             }
-            
+            StatsManager.Instance.SaveUpgrades();
             UpdateStatUpgradeUI();
         }
     }
@@ -99,13 +99,13 @@ public class ReforgeStationMenuController : MonoBehaviour
         if (StatsManager.Instance != null)
         {
             int costBefore = StatsManager.Instance.GetUpgradeCost(StatType.Stamina);
-            int creditsBefore = PlayerInventoryManager.instance?.Credits ?? 0;
+            int creditsBefore = PlayerLoadSaveManager.instance?.Credits ?? 0;
             
             bool success = StatsManager.Instance.TryUpgradeStat(StatType.Stamina);
             
             if (success)
             {
-                int creditsAfter = PlayerInventoryManager.instance?.Credits ?? 0;
+                int creditsAfter = PlayerLoadSaveManager.instance?.Credits ?? 0;
                 Debug.Log($"[ReforgeStation] Stamina upgraded! Cost: {costBefore}c | Credits: {creditsBefore} -> {creditsAfter}");
             }
             
@@ -118,13 +118,13 @@ public class ReforgeStationMenuController : MonoBehaviour
         if (StatsManager.Instance != null)
         {
             int costBefore = StatsManager.Instance.GetUpgradeCost(StatType.Damage);
-            int creditsBefore = PlayerInventoryManager.instance?.Credits ?? 0;
+            int creditsBefore = PlayerLoadSaveManager.instance?.Credits ?? 0;
             
             bool success = StatsManager.Instance.TryUpgradeStat(StatType.Damage);
             
             if (success)
             {
-                int creditsAfter = PlayerInventoryManager.instance?.Credits ?? 0;
+                int creditsAfter = PlayerLoadSaveManager.instance?.Credits ?? 0;
                 Debug.Log($"[ReforgeStation] Damage upgraded! Cost: {costBefore}c | Credits: {creditsBefore} -> {creditsAfter}");
             }
             

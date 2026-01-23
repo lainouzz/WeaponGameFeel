@@ -93,7 +93,7 @@ public class ExtractManager : MonoBehaviour
         if (currentExtractionZone != null && currentExtractionZone.isInExtractZone)
         {
             SceneManager.LoadScene("MainMenu");
-            PlayerInventoryManager.instance.SaveInventory();
+            PlayerLoadSaveManager.instance.SaveInventory();
         }
     }
 }

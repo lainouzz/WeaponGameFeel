@@ -60,23 +60,23 @@ public class Debugging : MonoBehaviour
         if (debugMode && isPlayerDead)
         {
             Debug.Log("[Debug] Player is dead, clearing inventory.");
-            if (PlayerInventoryManager.instance != null)
+            if (PlayerLoadSaveManager.instance != null)
             {
-                PlayerInventoryManager.instance.ClearInventory();
+                PlayerLoadSaveManager.instance.ClearInventory();
             }
         }
     }
 
     public void DebugGiveCredits()
     {
-        if (PlayerInventoryManager.instance != null)
+        if (PlayerLoadSaveManager.instance != null)
         {
-            PlayerInventoryManager.instance.AddCredits(debugCreditAmount);
-            Debug.Log($"[Debug] Added {debugCreditAmount} credits. Total: {PlayerInventoryManager.instance.Credits}");
+            PlayerLoadSaveManager.instance.AddCredits(debugCreditAmount);
+            Debug.Log($"[Debug] Added {debugCreditAmount} credits. Total: {PlayerLoadSaveManager.instance.Credits}");
         }
         else
         {
-            Debug.LogWarning("[Debug] PlayerInventoryManager not found!");
+            Debug.LogWarning("[Debug] PlayerLoadSaveManager not found!");
         }
     }
 
