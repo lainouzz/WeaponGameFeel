@@ -16,6 +16,8 @@ public class ReforgeStationMenuController : MonoBehaviour
     [SerializeField] private TMP_Text healthLevelText;
     [SerializeField] private TMP_Text staminaUpgradeCostText;
     [SerializeField] private TMP_Text staminaLevelText;
+    [SerializeField] private TMP_Text damageUpgradeCostText;
+    [SerializeField] private TMP_Text damageLevelText;
 
     void OnEnable()
     {
@@ -37,23 +39,6 @@ public class ReforgeStationMenuController : MonoBehaviour
         UpdateStatUpgradeUI();
     }
 
-    void OnDisable()
-    {
-        if (playerInventory != null)
-        {
-            playerInventory.OnItemRightClicked -= HandleTransferToVendor;
-        }
-
-        if (vendorSellManager != null)
-        {
-            vendorSellManager.OnSellConfirmed -= HandleSellConfirmed;
-        }
-
-        if (StatsManager.Instance != null)
-        {
-            StatsManager.Instance.OnStatsChanged -= UpdateStatUpgradeUI;
-        }
-    }
 
     void Start()
     {
@@ -128,6 +113,25 @@ public class ReforgeStationMenuController : MonoBehaviour
         }
     }
 
+    public void OnUpgradeDamageClicked()
+    {
+        if (StatsManager.Instance != null)
+        {
+            int costBefore = StatsManager.Instance.GetUpgradeCost(StatType.Damage);
+            int creditsBefore = PlayerInventoryManager.instance?.Credits ?? 0;
+            
+            bool success = StatsManager.Instance.TryUpgradeStat(StatType.Damage);
+            
+            if (success)
+            {
+                int creditsAfter = PlayerInventoryManager.instance?.Credits ?? 0;
+                Debug.Log($"[ReforgeStation] Damage upgraded! Cost: {costBefore}c | Credits: {creditsBefore} -> {creditsAfter}");
+            }
+            
+            UpdateStatUpgradeUI();
+        }
+    }
+
     private void UpdateStatUpgradeUI()
     {
         if (StatsManager.Instance == null) return;
@@ -156,7 +160,39 @@ public class ReforgeStationMenuController : MonoBehaviour
         if (staminaLevelText != null)
         {
             int level = StatsManager.Instance.GetUpgradeLevel(StatType.Stamina);
-            staminaLevelText.text = $"Stamina Lv.{level}";
+            float maxStamina = StatsManager.Instance.Stamina?.MaxValue ?? 0f;
+            staminaLevelText.text = $"Stamina Lv.{level} ({maxStamina:F0} SP)";
+        }
+        
+        // Damage upgrade UI
+        if (damageUpgradeCostText != null)
+        {
+            int cost = StatsManager.Instance.GetUpgradeCost(StatType.Damage);
+            damageUpgradeCostText.text = $"Cost: {cost}c";
+        }
+
+        if (damageLevelText != null)
+        {
+            int level = StatsManager.Instance.GetUpgradeLevel(StatType.Damage);
+            damageLevelText.text = $"Damage Lv.{level}";
+        }
+    }
+
+    void OnDisable()
+    {
+        if (playerInventory != null)
+        {
+            playerInventory.OnItemRightClicked -= HandleTransferToVendor;
+        }
+
+        if (vendorSellManager != null)
+        {
+            vendorSellManager.OnSellConfirmed -= HandleSellConfirmed;
+        }
+
+        if (StatsManager.Instance != null)
+        {
+            StatsManager.Instance.OnStatsChanged -= UpdateStatUpgradeUI;
         }
     }
 }

@@ -281,7 +281,7 @@ public class PlayerMovement : MonoBehaviour, ITarget
         if (gameInput.Player.Jump.triggered && isGrounded && canJump && !isCrouching)
         {
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravityScale);
-            isCrouching = false; // Stand up when jumping
+            isCrouching = false;
         }
     }
 

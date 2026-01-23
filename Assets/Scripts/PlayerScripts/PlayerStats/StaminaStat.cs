@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [SerializeField]
-public class HealthStat : BaseStat
+public class StaminaStat : BaseStat
 {
     [SerializeField] private float regenRate;
     [SerializeField] private float regenDelay;
@@ -11,20 +11,15 @@ public class HealthStat : BaseStat
 
     public event Action OnDeath;
 
-    public HealthStat(float baseValue, float maxValue) : base(baseValue, maxValue)
+    public StaminaStat(float baseValue, float maxValue) : base(baseValue, maxValue)
     {
         OnDepleted += () => OnDeath?.Invoke();
     }
 
-    public void TakeDamage(float damage)
+    public void Consume(float amount)
     {
         timeSinceLastDamage = Time.time;
-        Remove(damage);
-    }
-
-    public void Heal(float amount)
-    {
-        Add(amount);
+        Remove(amount);
     }
 
     public override void Regenerate(float deltaTime)

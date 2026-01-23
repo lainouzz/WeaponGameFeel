@@ -8944,7 +8944,7 @@ GameObject:
   - component: {fileID: 2087913590}
   - component: {fileID: 2087913591}
   - component: {fileID: 2087913592}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -8992,7 +8992,7 @@ Transform:
   m_GameObject: {fileID: 2087913584}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.9999969, z: -0, w: -0.002486065}
-  m_LocalPosition: {x: 13.94, y: 0.94, z: 25.35}
+  m_LocalPosition: {x: 13.94, y: 1, z: 25.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9176,7 +9176,7 @@ MonoBehaviour:
     m_Bits: 128
   pickupText: {fileID: 1539016640}
   raycastInterval: 0.1
-  pickupRange: 20
+  pickupRange: 5
 --- !u!1 &2114460377
 GameObject:
   m_ObjectHideFlags: 0

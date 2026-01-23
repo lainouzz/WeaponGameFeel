@@ -5,16 +5,16 @@ public class EnemyBehavior : MonoBehaviour, IDamagable
     [SerializeField]private float currentHealth;
     [SerializeField]private float maxHealth;
 
-    private void OnEnable()
-    {
-        
-    }
 
     private void Awake()
     {
         currentHealth = maxHealth;
     }
 
+    private void OnEnable()
+    {
+
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {

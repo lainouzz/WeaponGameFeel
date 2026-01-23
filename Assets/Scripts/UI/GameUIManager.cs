@@ -15,12 +15,6 @@ public class GameUIManager : MonoBehaviour
 
     private bool isPaused = false;
 
-    private void OnEnable()
-    {
-        gameInput = new GameInput();
-        gameInput.Enable();
-    }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,6 +26,12 @@ public class GameUIManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
+    }
+
+    private void OnEnable()
+    {
+        gameInput = new GameInput();
+        gameInput.Enable();
     }
 
     private void Update()

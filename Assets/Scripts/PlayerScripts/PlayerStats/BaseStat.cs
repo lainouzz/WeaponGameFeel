@@ -56,7 +56,7 @@ public abstract class BaseStat
     public virtual void UpgradeMax(float amount)
     {
         maxValue += amount;
-        currentValue = amount;
+        currentValue += amount;
         OnValueChanged?.Invoke(currentValue, maxValue);
     }
 

@@ -18,16 +18,24 @@ public class StatsManager : MonoBehaviour
     public float staminaRegenDelay = 2f;
     public float currentStamina;
 
+    [Header("Player Damage")]
+    public float baseDamage = 10f;
+    public float damageMultiplier = 1.5f;
+
     [Header("Player Upgrade Settings")]
     [SerializeField] private float healthUpgradeAmount = 20f;
     [SerializeField] private float staminaUpgradeAmount = 15f;
+    [SerializeField] private float damageUpgradeAmount = 10f;
     [SerializeField] private int upgradeCost = 100;
     [SerializeField] private float upgradeMultiplier = 1.2f;
 
     public HealthStat Health { get; private set; }
+    public StaminaStat Stamina { get; private set; }
+    public DamageStat Damage { get; private set; }
 
     private int HealthUpgradeLevel = 0;
     private int StaminaUpgradeLevel = 0;
+    private int DamageUpgradeLevel = 0;
 
     public event Action OnStatsChanged;
     public event Action<String> OnUpgradeFailed;
@@ -47,8 +55,13 @@ public class StatsManager : MonoBehaviour
     {
         Health = new HealthStat(maxHealth, maxHealth);
         currentHealth = maxHealth;
+        Stamina = new StaminaStat(maxStamina, maxStamina);
+        currentStamina = maxStamina;
+
         Health.OnDeath += HandlePlayerDeath;
         Health.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
+        Stamina.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
+        Damage.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
     }
 
     // Update is called once per frame
@@ -67,6 +80,16 @@ public class StatsManager : MonoBehaviour
         Health.Heal(amount);
         Debug.Log($"[Stats] Healed {amount}. Health: {Health.CurrentValue}/{Health.MaxValue}");
     }
+    public void UseStamina(float amount)
+    {
+        Stamina?.Consume(amount);
+        Debug.Log($"[Stats] Used {amount} stamina. Stamina: {Stamina.CurrentValue}/{Stamina.MaxValue}");
+    }
+    public float GetFinalDamage(float baseDamage)
+    {
+        return baseDamage * Damage.FinalMultiplier;
+    }
+
     // Upgrade
 
     public int GetUpgradeCost(StatType statType)
@@ -74,6 +97,8 @@ public class StatsManager : MonoBehaviour
        int Level = statType switch
        {
            StatType.Health => HealthUpgradeLevel,
+           StatType.Stamina => StaminaUpgradeLevel,
+           StatType.Damage => DamageUpgradeLevel,
            _ => 0
        };
 
@@ -85,6 +110,8 @@ public class StatsManager : MonoBehaviour
         return statType switch
         {
             StatType.Health => HealthUpgradeLevel,
+            StatType.Stamina => StaminaUpgradeLevel,
+            StatType.Damage => DamageUpgradeLevel,
             _ => 0
         };
     }
@@ -115,6 +142,16 @@ public class StatsManager : MonoBehaviour
                 HealthUpgradeLevel++;
                 Debug.Log($"[Stats] Upgraded Health to level {HealthUpgradeLevel}. New Max Health: {maxHealth}");
                 break;
+            case StatType.Stamina:
+                Stamina.UpgradeMax(staminaUpgradeAmount);
+                StaminaUpgradeLevel++;
+                Debug.Log($"[Stats] Upgraded Stamina to level {StaminaUpgradeLevel}. New Max Stamina: {maxStamina}");
+                break;
+            case StatType.Damage:
+                damageMultiplier += damageUpgradeAmount; // Example increment
+                DamageUpgradeLevel++;
+                Debug.Log($"[Stats] Upgraded Damage to level {DamageUpgradeLevel}. New Damage Multiplier: {damageMultiplier}");
+                break;
         }
         OnStatsChanged?.Invoke();
         return true;
@@ -122,8 +159,9 @@ public class StatsManager : MonoBehaviour
 
     private void HandlePlayerDeath()
     {
-        Debug.Log("[Stats] Player died!");
         // Could trigger death screen, respawn, etc.
+        Debug.Log("[Stats] Player died!");
+        PlayerBehavior.Instance.OnDeath();
     }
 
     void OnDestroy()
@@ -137,6 +175,7 @@ public class StatsManager : MonoBehaviour
     public enum StatType
     {
         Health,
-        Stamina
+        Stamina,
+        Damage
     }
 }

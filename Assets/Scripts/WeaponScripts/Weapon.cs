@@ -498,21 +498,23 @@ public class Weapon : MonoBehaviour
         
         // Add physics
         Rigidbody rb = droppedMag.GetComponent<Rigidbody>();
-        if (rb == null)
-        {
-            rb = droppedMag.AddComponent<Rigidbody>();
-        }
-        MeshCollider mc = droppedMag.GetComponent<MeshCollider>();
-        if(mc == null)
-        {
-            mc = droppedMag.AddComponent<MeshCollider>();
-            mc.convex = true;
-        }
+       
 
         // Apply ejection force
         Vector3 ejectDirection = (-transform.right + -transform.up * 0.5f).normalized;
         rb.AddForce(ejectDirection * magazineDropForce, ForceMode.Impulse);
         rb.AddTorque(UnityEngine.Random.insideUnitSphere * magazineDropForce * 0.5f, ForceMode.Impulse);
+
+        if (rb == null)
+        {
+            rb = droppedMag.AddComponent<Rigidbody>();
+        }
+        MeshCollider mc = droppedMag.GetComponent<MeshCollider>();
+        if (mc == null)
+        {
+            mc = droppedMag.AddComponent<MeshCollider>();
+            mc.convex = true;
+        }
 
         // Destroy after lifetime
         Destroy(droppedMag, magazineLifetime);
@@ -679,9 +681,6 @@ public class Weapon : MonoBehaviour
             // Debug visualization
             Debug.DrawLine(ray.origin, hit.point, Color.red, 1f);
 
-            // Log what we hit
-            Debug.Log($"Hit: {hit.collider.name} at distance {hit.distance:F2}m (spread: {totalSpread:F2}°)");
-
             // Spawn impact effect if assigned
             if (impactEffectPrefab != null)
             {
@@ -695,9 +694,8 @@ public class Weapon : MonoBehaviour
             // Try to deal damage if target has a health component          
             if (hit.collider.TryGetComponent<IDamagable>(out var damagable))
             {
-                damage = Random.Range(damage * 0.9f, damage * 1.1f); // Add slight damage variation
-                damagable.TakeDamage(damage);
-                hit.collider.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+                float finalDamage = StatsManager.Instance.GetFinalDamage(damage);
+                damagable.TakeDamage(finalDamage);
             }
         }
         else
