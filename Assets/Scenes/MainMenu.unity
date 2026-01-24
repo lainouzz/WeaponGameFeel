@@ -153,8 +153,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 424.65, y: 149.57}
-  m_SizeDelta: {x: 502.394, y: 74.0723}
+  m_AnchoredPosition: {x: 424.65, y: 156.07147}
+  m_SizeDelta: {x: 502.394, y: 61.0695}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &30234833
 MonoBehaviour:
@@ -2856,8 +2856,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.86126024, y: 0.91360056}
   m_AnchorMax: {x: 0.86126024, y: 0.91360056}
-  m_AnchoredPosition: {x: 1, y: -0.5}
-  m_SizeDelta: {x: 200, y: 65}
+  m_AnchoredPosition: {x: 1, y: 3.6228943}
+  m_SizeDelta: {x: 200, y: 56.754}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &838311137
 MonoBehaviour:
@@ -3151,7 +3151,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.6495204, y: 0.91360056}
   m_AnchorMax: {x: 0.6495204, y: 0.91360056}
-  m_AnchoredPosition: {x: -1, y: -3}
+  m_AnchoredPosition: {x: -3.800003, y: 3.6228943}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &935945935
@@ -4551,11 +4551,9 @@ MonoBehaviour:
   maxHealth: 100
   healthRegenRate: 5
   healthRegenDelay: 3
-  currentHealth: 0
   maxStamina: 100
   staminaRegenRate: 10
   staminaRegenDelay: 2
-  currentStamina: 100
   baseDamage: 10
   damageMultiplier: 1.5
   healthUpgradeAmount: 20
@@ -4563,6 +4561,7 @@ MonoBehaviour:
   damageUpgradeAmount: 10
   upgradeCost: 100
   upgradeMultiplier: 1.2
+  saveFileName: playerstats.json
 --- !u!1 &1265177008
 GameObject:
   m_ObjectHideFlags: 0
@@ -4645,7 +4644,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1265177011}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 193223487}
+        m_TargetAssemblyTypeName: LevelSelector, Assembly-CSharp
+        m_MethodName: QuitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1265177011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6379,8 +6390,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -477.84, y: 158.56}
-  m_SizeDelta: {x: 396.0222, y: 74.0723}
+  m_AnchoredPosition: {x: -477.84, y: 162.68}
+  m_SizeDelta: {x: 396.0222, y: 56.754}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1730391277
 MonoBehaviour:
@@ -7455,8 +7466,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -419.29, y: 171.61}
-  m_SizeDelta: {x: 513.1179, y: 74.0723}
+  m_AnchoredPosition: {x: -419.29, y: 180.34}
+  m_SizeDelta: {x: 513.1179, y: 56.615}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1960021892
 MonoBehaviour:

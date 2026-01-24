@@ -35,7 +35,8 @@ public class StatsManager : MonoBehaviour
     public HealthStat Health { get; private set; }
     public StaminaStat Stamina { get; private set; }
 
-    public DamageStat Damage { get; private set; }
+    private DamageStat _damage;                     
+    public DamageStat Damage => _damage;
 
     private int HealthUpgradeLevel = 0;
     private int StaminaUpgradeLevel = 0;
@@ -66,6 +67,8 @@ public class StatsManager : MonoBehaviour
         Stamina = new StaminaStat(maxStamina, maxStamina);
         Stamina.SetMax(maxStamina, preserveCurrent: false);
 
+        _damage = new DamageStat(damageMultiplier);
+
         Health.OnDeath += HandlePlayerDeath;
         Health.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
         Stamina.OnValueChanged += (c, m) => OnStatsChanged?.Invoke();
@@ -93,9 +96,9 @@ public class StatsManager : MonoBehaviour
         Stamina.Remove(amount);
         Debug.Log($"[Stats] Used {amount} stamina. Stamina: {Stamina.CurrentValue}/{Stamina.MaxValue}");
     }
-    public float GetFinalDamage(float baseDamage)
+    public float GetFinalDamage(float inputBaseDamage)
     {
-        return baseDamage * Damage.FinalMultiplier;
+        return inputBaseDamage * Damage.FinalMultiplier;
     }
 
     // Upgrade
@@ -191,6 +194,7 @@ public class StatsManager : MonoBehaviour
 
         // Damage: Direct field update (no current to preserve)
         damageMultiplier = 1.5f + (damageUpgradeAmount * DamageUpgradeLevel);
+        Damage.SetMultiplier(damageMultiplier);
     }
 
     public void SetUpgradeLevel(StatType statType, int level)
@@ -263,6 +267,16 @@ public class StatsManager : MonoBehaviour
         {
             Debug.LogError($"[Stats] Failed to load: {e.Message}");
         }
+    }
+
+    public void ResetUpgrades()
+    {
+        HealthUpgradeLevel = 0;
+        StaminaUpgradeLevel = 0;
+        DamageUpgradeLevel = 0;
+        ApplyUpgrades();
+        SaveUpgrades();
+        Debug.Log("[Stats] Reset all upgrades to default.");
     }
 
     private void OnApplicationQuit()

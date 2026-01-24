@@ -9,6 +9,7 @@ public class Weapon : MonoBehaviour
     public Transform firePoint;
     public ParticleSystem particleSystem;
     public TMP_Text ammoText;
+    public StatsManager statsManager;
 
     public float swapMultiplier;
     public float smoothSwayAmount;
@@ -260,7 +261,7 @@ public class Weapon : MonoBehaviour
 
     private void HandleStateChanged(WeaponStateType from, WeaponStateType to)
     {
-        Debug.Log($"[Weapon] State changed: {from} -> {to}");
+        //Debug.Log($"[Weapon] State changed: {from} -> {to}");
         
         // Fire event for external listeners
         OnWeaponStateChanged?.Invoke(from, to);
@@ -519,7 +520,7 @@ public class Weapon : MonoBehaviour
         // Destroy after lifetime
         Destroy(droppedMag, magazineLifetime);
         
-        Debug.Log("[Weapon] Magazine dropped");
+        //Debug.Log("[Weapon] Magazine dropped");
     }
 
     public void HideCurrentMagazine()
@@ -527,7 +528,7 @@ public class Weapon : MonoBehaviour
         if (currentMagazineObject != null)
         {
             currentMagazineObject.SetActive(false);
-            Debug.Log("[Weapon] Current magazine hidden");
+           // Debug.Log("[Weapon] Current magazine hidden");
         }
     }
 
@@ -536,7 +537,7 @@ public class Weapon : MonoBehaviour
         if (currentMagazineObject != null)
         {
             currentMagazineObject.SetActive(true);
-            Debug.Log("[Weapon] Current magazine shown");
+           // Debug.Log("[Weapon] Current magazine shown");
         }
     }
 
@@ -691,11 +692,20 @@ public class Weapon : MonoBehaviour
             // Apply physics force to hit object
             ApplyImpactForce(hit, ray.direction);
 
-            // Try to deal damage if target has a health component          
             if (hit.collider.TryGetComponent<IDamagable>(out var damagable))
             {
-                float finalDamage = StatsManager.Instance.GetFinalDamage(damage);
-                damagable.TakeDamage(finalDamage);
+                Debug.Log($"Found IDamagable on {hit.collider.name}");
+
+                if (statsManager == null)
+                {
+                    Debug.LogError("statsManager reference is NULL in Weapon!");
+                    return;
+                }
+
+                float finalDmg = statsManager.GetFinalDamage(damage);
+                Debug.Log($"Calling TakeDamage({finalDmg}) on {hit.collider.name}");
+
+                damagable.TakeDamage(finalDmg);
             }
         }
         else

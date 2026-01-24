@@ -37,7 +37,7 @@ public class WeaponReloadingState : WeaponStateBase
 
         weapon.OnReloadStart();
         
-        Debug.Log($"[WeaponState] Reloading started ({weapon.ReloadTime}s)");
+       // Debug.Log($"[WeaponState] Reloading started ({weapon.ReloadTime}s)");
     }
 
     public override void Update()
@@ -80,7 +80,7 @@ public class WeaponReloadingState : WeaponStateBase
         // Ensure magazine is visible when reload completes
         weapon.ShowCurrentMagazine();
         weapon.OnReloadFinish();
-        Debug.Log($"[WeaponState] Reload complete! Ammo: {weapon.CurrentAmmo}/{weapon.ReserveAmmo}");
+       // Debug.Log($"[WeaponState] Reload complete! Ammo: {weapon.CurrentAmmo}/{weapon.ReserveAmmo}");
         RequestStateChange(WeaponStateType.Idle);
     }
 
@@ -90,7 +90,7 @@ public class WeaponReloadingState : WeaponStateBase
         // (gameplay > realism here - player shouldn't be stuck without a mag)
         weapon.ShowCurrentMagazine();
         weapon.OnReloadCancel();
-        Debug.Log("[WeaponState] Reload cancelled");
+        //Debug.Log("[WeaponState] Reload cancelled");
         RequestStateChange(WeaponStateType.Firing);
     }
 

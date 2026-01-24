@@ -3439,6 +3439,7 @@ MonoBehaviour:
   firePoint: {fileID: 0}
   particleSystem: {fileID: 0}
   ammoText: {fileID: 0}
+  statsManager: {fileID: 0}
   swapMultiplier: 0.5
   smoothSwayAmount: 2
   rollAmount: 10
@@ -4739,15 +4740,17 @@ MonoBehaviour:
   maxHealth: 100
   healthRegenRate: 5
   healthRegenDelay: 3
-  currentHealth: 0
   maxStamina: 100
   staminaRegenRate: 10
   staminaRegenDelay: 2
-  currentStamina: 0
+  baseDamage: 10
+  damageMultiplier: 1.5
   healthUpgradeAmount: 20
   staminaUpgradeAmount: 15
+  damageUpgradeAmount: 10
   upgradeCost: 100
   upgradeMultiplier: 1.2
+  saveFileName: playerstats.json
 --- !u!1001 &1253284089
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8417,6 +8420,7 @@ MonoBehaviour:
   firePoint: {fileID: 568946467}
   particleSystem: {fileID: 504718655}
   ammoText: {fileID: 1604829458}
+  statsManager: {fileID: 1246288983}
   swapMultiplier: 0.5
   smoothSwayAmount: 2
   rollAmount: 10

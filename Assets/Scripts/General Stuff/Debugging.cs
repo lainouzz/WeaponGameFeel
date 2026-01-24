@@ -41,6 +41,10 @@ public class Debugging : MonoBehaviour
         {
             DebugGiveCredits();
         }
+        if(Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            StatsManager.Instance.ResetUpgrades();
+        }
 
         // H = Heal player to full
         if (Keyboard.current != null && Keyboard.current.hKey.wasPressedThisFrame)

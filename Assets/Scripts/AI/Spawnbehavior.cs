@@ -77,7 +77,7 @@ public class Spawnbehavior : MonoBehaviour
         currentEnemies++;
         
         enemy.GetComponent<EnemyMovement>().SetTarget(player.GetComponent<ITarget>());
-        Debug.Log($"[SpawnBehavior] Spawned enemy at {spawnPos} (edge: {edge})");
+        //Debug.Log($"[SpawnBehavior] Spawned enemy at {spawnPos} (edge: {edge})");
     }
 
     public void SpawnEnemyAnywhere()
@@ -88,7 +88,7 @@ public class Spawnbehavior : MonoBehaviour
         Vector3 spawnPos = transform.position + new Vector3(randX, 0f, randZ);
         GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
         
-        Debug.Log($"[SpawnBehavior] Spawned enemy at {spawnPos}");
+        //Debug.Log($"[SpawnBehavior] Spawned enemy at {spawnPos}");
     }
 
     public void OnEnemyDeath()

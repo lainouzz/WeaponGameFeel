@@ -87,6 +87,6 @@ public class GameUIManager : MonoBehaviour
 
     private void OnDisable()
     {
-        gameInput.Disable();
+        //gameInput.Disable();
     }
 }
