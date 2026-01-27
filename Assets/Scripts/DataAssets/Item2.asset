@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: Item2
   m_EditorClassIdentifier: 
   itemId: Item2
-  itemName: Item1
+  itemName: Item2
   icon: {fileID: 21300000, guid: 16d0d46fab89616449729ef216887c7f, type: 3}
   sellPrice: 50
   quantity: 0
   quantityLimit: 10
+  dropProbability: 0.5
+  itemPrefab: {fileID: 3419285943253726039, guid: a12992596d5a7e54c920628dc7e469b6, type: 3}
   itemType: 3
   rarity: 0

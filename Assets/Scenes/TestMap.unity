@@ -1197,7 +1197,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1627557819907068751, guid: 01ddabfdcbd5b8740bd2cda6216d3f9e, type: 3}
   m_PrefabInstance: {fileID: 1960443664}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1597219198}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653b477d9fd53ac499872c8c6bc306d8, type: 3}
@@ -7139,6 +7139,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 240403718}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1597219198 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1785107732468163703, guid: 01ddabfdcbd5b8740bd2cda6216d3f9e, type: 3}
+  m_PrefabInstance: {fileID: 1960443664}
+  m_PrefabAsset: {fileID: 0}
+--- !u!208 &1597219203
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597219198}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.5, y: 0.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &1604829456
 GameObject:
   m_ObjectHideFlags: 0
@@ -8915,6 +8936,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1509844367612695994, guid: 01ddabfdcbd5b8740bd2cda6216d3f9e, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 73f19a5323631b5448496397480a27a5, type: 2}
     - target: {fileID: 1785107732468163703, guid: 01ddabfdcbd5b8740bd2cda6216d3f9e, type: 3}
       propertyPath: m_Name
       value: ExtractZone
@@ -8922,7 +8947,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1785107732468163703, guid: 01ddabfdcbd5b8740bd2cda6216d3f9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1597219203}
   m_SourcePrefab: {fileID: 100100000, guid: 01ddabfdcbd5b8740bd2cda6216d3f9e, type: 3}
 --- !u!4 &2033272088 stripped
 Transform:

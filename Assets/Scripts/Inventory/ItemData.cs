@@ -14,6 +14,9 @@ public class ItemData : ScriptableObject
     public int sellPrice = 10;
     public int quantity;
     public int quantityLimit = 10;
+    public float dropProbability;
+    
+    public GameObject itemPrefab;
 
     public ItemType itemType;
     public ItemRarity rarity;

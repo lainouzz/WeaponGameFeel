@@ -18,5 +18,7 @@ MonoBehaviour:
   sellPrice: 250
   quantity: 0
   quantityLimit: 5
+  dropProbability: 0.3
+  itemPrefab: {fileID: 3419285943253726039, guid: a12992596d5a7e54c920628dc7e469b6, type: 3}
   itemType: 3
   rarity: 2

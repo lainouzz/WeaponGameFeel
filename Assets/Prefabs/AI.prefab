@@ -268,6 +268,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa920d97028c744e9d6b25644a21c86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveSpeed: 3
+  rotationSpeed: 5
+  updateDestinationInterval: 0.2
 --- !u!114 &7561272320778062461
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,3 +285,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentHealth: 0
   maxHealth: 100
+  moveSpeed: 0
+  attackRange: 0
+  attackDamage: 0
+  lootTable:
+  - {fileID: 11400000, guid: cbd794481bf0e1c41bfb73b7554e493b, type: 2}
+  - {fileID: 11400000, guid: cdfc7121deb767b40ac6e17770b98b59, type: 2}
+  - {fileID: 11400000, guid: 23ce9dbfa3384be49ae79ba63c85442a, type: 2}

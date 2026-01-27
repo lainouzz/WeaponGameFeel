@@ -95,7 +95,7 @@ public class SlotMachine : MonoBehaviour
             if (cam != null)
             {
                 playerTransform = cam.transform;
-                playerMovement = FindObjectOfType<PlayerMovement>();
+                playerMovement = FindFirstObjectByType<PlayerMovement>();
                 if (debugMode) Debug.Log("[SlotMachine] Using main camera as player reference (no 'Player' tag found)");
             }
         }
