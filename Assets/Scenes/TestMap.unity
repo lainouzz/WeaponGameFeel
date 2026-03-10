@@ -8513,12 +8513,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainAudioSource: {fileID: 1819037783}
   loopAudioSource: {fileID: 0}
-  fireSoundSingle: {fileID: 8300000, guid: 1176864644d0c6f41a0959e8fb43f193, type: 3}
-  fireSoundLoop: {fileID: 8300000, guid: 965233ff099dbe24298bbf08a401e5dd, type: 3}
+  fireSoundSingle: {fileID: 8300000, guid: b199b0ee4e6686841afb4babbb68d329, type: 3}
+  fireSoundLoop: {fileID: 8300000, guid: 7a889e59e4e558a45a6fc6482b4a2e1f, type: 3}
   dryFireSound: {fileID: 0}
-  fireTailSound: {fileID: 8300000, guid: 828f1a97c70f5864ebc30c47a19a5236, type: 3}
-  fireVolume: 0.1
-  firePitchVariation: 0.05
+  fireTailSound: {fileID: 8300000, guid: ef3a936ff6c1e7b4da6bf4b16860dac1, type: 3}
+  fireVolume: 0.423
+  firePitchVariation: 0.147
   reloadEmptySound: {fileID: 8300000, guid: e651d7b2180f78745b0e858ed3b466a8, type: 3}
   magazineOutSound: {fileID: 0}
   magazineInSound: {fileID: 0}
@@ -9226,7 +9226,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2114460378
 MonoBehaviour:
   m_ObjectHideFlags: 0

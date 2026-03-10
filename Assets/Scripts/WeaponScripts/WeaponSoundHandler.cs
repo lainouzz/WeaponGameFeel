@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -82,6 +83,7 @@ public class WeaponSoundHandler : MonoBehaviour
 
     // Fire state tracking
     private bool isFiring;
+    private Coroutine loopFadeCoroutine;
 
     void Awake()
     {
@@ -171,6 +173,13 @@ public class WeaponSoundHandler : MonoBehaviour
     {
         isFiring = true;
 
+        // Cancel any fade-out on the loop source when we start firing again
+        if (loopFadeCoroutine != null)
+        {
+            StopCoroutine(loopFadeCoroutine);
+            loopFadeCoroutine = null;
+        }
+
         if (weapon.IsAutomatic && fireSoundLoop != null)
         {
             // Start looping fire sound
@@ -188,16 +197,30 @@ public class WeaponSoundHandler : MonoBehaviour
     {
         isFiring = false;
 
-        // Stop loop sound
+        // If we have a loop playing, fade it out while playing the tail to avoid a hard cut
         if (loopAudioSource != null && loopAudioSource.isPlaying)
         {
-            loopAudioSource.Stop();
-        }
+            if (fireTailSound != null)
+            {
+                // Start tail first so it overlaps slightly with the loop
+                PlaySound(fireTailSound, fireVolume * 0.7f);
 
-        // Play tail sound
-        if (fireTailSound != null)
+                // Smoothly fade out the loop over a short duration
+                loopFadeCoroutine = StartCoroutine(FadeOutLoop(0.08f));
+            }
+            else
+            {
+                // No tail sound configured, just stop immediately
+                loopAudioSource.Stop();
+            }
+        }
+        else
         {
-            PlaySound(fireTailSound, fireVolume * 0.7f);
+            // No loop playing (semi-auto) – just play the tail as a one-shot if configured
+            if (fireTailSound != null)
+            {
+                PlaySound(fireTailSound, fireVolume * 0.7f);
+            }
         }
     }
 
@@ -323,6 +346,26 @@ public class WeaponSoundHandler : MonoBehaviour
     #endregion
 
     #region Utility Methods
+
+    private IEnumerator FadeOutLoop(float duration)
+    {
+        if (loopAudioSource == null) yield break;
+
+        float startVolume = loopAudioSource.volume;
+        float t = 0f;
+
+        while (t < duration && loopAudioSource.isPlaying)
+        {
+            t += Time.deltaTime;
+            float lerp = Mathf.Clamp01(t / duration);
+            loopAudioSource.volume = Mathf.Lerp(startVolume, 0f, lerp);
+            yield return null;
+        }
+
+        loopAudioSource.Stop();
+        loopAudioSource.volume = fireVolume; // reset for next time
+        loopFadeCoroutine = null;
+    }
 
     private void PlaySound(AudioClip clip, float volume)
     {
