@@ -41,9 +41,15 @@ public class WeaponFiringState : WeaponStateBase
             ? Mouse.current.leftButton.isPressed 
             : Mouse.current.leftButton.wasPressedThisFrame;
 
+        if (wantsToFire)
+        {
+            weapon.animator.SetBool("IsFiring", true);
+        }
+
         // Check if we should stop firing
         if (!wantsToFire)
         {
+            weapon.animator.SetBool("IsFiring", false);
             RequestStateChange(WeaponStateType.Idle);
             return;
         }
@@ -54,11 +60,13 @@ public class WeaponFiringState : WeaponStateBase
             if (weapon.ReserveAmmo > 0)
             {
                 // Auto-reload
+                weapon.animator.SetBool("IsFiring", false);
                 RequestStateChange(WeaponStateType.Reloading);
             }
             else
             {
                 // Out of all ammo
+                weapon.animator.SetBool("IsFiring", false);
                 RequestStateChange(WeaponStateType.Idle);
             }
             return;

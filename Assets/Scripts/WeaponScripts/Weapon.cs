@@ -39,6 +39,10 @@ public class Weapon : MonoBehaviour
     private WeaponSoundHandler soundHandler;
     private WeaponStateMachine stateMachine;
 
+    public Animator animator;
+    [Tooltip("Fire rate the fire animation was authored at (shots/sec). Adjusts animation speed to match fireRate.")]
+    public float baseAnimationFireRate = 5f;
+
     private int currentAmmo;
     private int reserveAmmo;
     private float nextFireTime;
@@ -63,6 +67,7 @@ public class Weapon : MonoBehaviour
     public event Action<int, int> OnAmmoChanged;
     public event Action<bool> OnReloadStateChanged;
     public event Action<WeaponStateType, WeaponStateType> OnWeaponStateChanged;
+    public event Action<bool> OnFireModeChanged;
 
     private void Awake()
     {
@@ -203,6 +208,11 @@ public class Weapon : MonoBehaviour
         }
 
         ballisticsController?.UpdateSpreadRecovery();
+
+        if (Keyboard.current != null && Keyboard.current.bKey.wasPressedThisFrame)
+        {
+            ToggleFireMode();
+        }
     }
 
     public bool CanFire()
@@ -228,6 +238,7 @@ public class Weapon : MonoBehaviour
         currentAmmo--;
         OnAmmoChanged?.Invoke(currentAmmo, reserveAmmo);
 
+        
         if (recoilController != null)
         {
             recoilController.recoilPitchVel -= recoilController.recoilImpulePitch;
@@ -249,11 +260,23 @@ public class Weapon : MonoBehaviour
             {
                 if (!visualsController.isAutoMuzzlePlaying)
                 {
+                    if (animator != null && baseAnimationFireRate > 0f)
+                    {
+                        animator.SetFloat("FireAnimSpeed", fireRate / baseAnimationFireRate);
+                    }
+                    animator.SetTrigger("FireFull");
+                    animator.SetBool("IsFiring", true);
                     visualsController.StartAutoMuzzle();
                 }
             }
             else
             {
+                // Scale animation speed so the bolt cycle fits within one fire interval
+                if (animator != null && baseAnimationFireRate > 0f)
+                {
+                    animator.SetFloat("FireAnimSpeed", fireRate / baseAnimationFireRate);
+                }
+                animator.SetTrigger("FireSingle");       
                 visualsController.PlaySingleMuzzle();
             }
         }
@@ -329,6 +352,16 @@ public class Weapon : MonoBehaviour
         {
             stateMachine.ChangeState(WeaponStateType.Reloading);
         }
+    }
+
+    public void ToggleFireMode()
+    {
+        if (stateMachine.IsInState(WeaponStateType.Reloading)) return;
+        if (stateMachine.IsInState(WeaponStateType.Drawing)) return;
+        if (stateMachine.IsInState(WeaponStateType.Switching)) return;
+
+        isAutomatic = !isAutomatic;
+        OnFireModeChanged?.Invoke(isAutomatic);
     }
 
     public void CancelReload()

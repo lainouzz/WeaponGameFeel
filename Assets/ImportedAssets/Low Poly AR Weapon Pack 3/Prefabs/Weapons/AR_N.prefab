@@ -533,7 +533,6 @@ GameObject:
   - component: {fileID: 8554469132278352545}
   - component: {fileID: 1803219787614594266}
   - component: {fileID: 497203914204288492}
-  - component: {fileID: 8372161144054714776}
   - component: {fileID: 4937351508842035584}
   m_Layer: 6
   m_Name: AR_N
@@ -591,6 +590,8 @@ MonoBehaviour:
   reloadTime: 2
   canCancelReload: 0
   drawTime: 0.5
+  animator: {fileID: 0}
+  baseAnimationFireRate: 5
 --- !u!54 &5163019561020752432
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -852,39 +853,6 @@ MonoBehaviour:
   cameraRecoilPitchADS: 1.5
   cameraRecoilYawADS: 0.75
   firstShotMultiplierADS: 1.25
---- !u!114 &8372161144054714776
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3205656361919459485}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1beea51f03201864eab99916988e687c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mainAudioSource: {fileID: 0}
-  loopAudioSource: {fileID: 0}
-  fireSoundSingle: {fileID: 0}
-  fireSoundLoop: {fileID: 0}
-  dryFireSound: {fileID: 0}
-  fireTailSound: {fileID: 0}
-  fireVolume: 1
-  firePitchVariation: 0.05
-  reloadEmptySound: {fileID: 0}
-  magazineOutSound: {fileID: 0}
-  magazineInSound: {fileID: 0}
-  chargingHandleSound: {fileID: 0}
-  reloadTacticalSound: {fileID: 0}
-  magazineOutTimePercent: 0.1
-  magazineInTimePercent: 0.5
-  chargingHandleTimePercent: 0.8
-  reloadVolume: 1
-  drawSound: {fileID: 0}
-  aimInSound: {fileID: 0}
-  aimOutSound: {fileID: 0}
-  otherVolume: 0.8
 --- !u!114 &4937351508842035584
 MonoBehaviour:
   m_ObjectHideFlags: 0

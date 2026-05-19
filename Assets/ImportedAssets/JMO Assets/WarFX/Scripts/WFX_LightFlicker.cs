@@ -2,7 +2,8 @@ using UnityEngine;
 using System.Collections;
 
 /**
- *	Rapidly sets a light on/off.
+ *	Muzzle flash light flicker.
+ *	Supports single-fire (one burst) and full-auto (continuous) modes.
  *	
  *	(c) 2015, Jean Moreno
 **/
@@ -10,29 +11,69 @@ using System.Collections;
 [RequireComponent(typeof(Light))]
 public class WFX_LightFlicker : MonoBehaviour
 {
-	public float time = 0.05f;
-	
-	private float timer;
-	
-	void Start ()
+	[Tooltip("Interval between each on/off toggle")]
+	public float flickerInterval = 0.02f;
+	[Tooltip("How long the light stays on for a single shot (seconds)")]
+	public float singleShotDuration = 0.07f;
+
+	private Light muzzleLight;
+	private Coroutine activeCoroutine;
+
+	private void Awake()
 	{
-		timer = time;
-		StartCoroutine("Flicker");
+		muzzleLight = GetComponent<Light>();
+		muzzleLight.enabled = false;
 	}
-	
-	IEnumerator Flicker()
+
+	// Call once per single shot
+	public void PlaySingle()
 	{
-		while(true)
+		StopActive();
+		activeCoroutine = StartCoroutine(SingleFlicker());
+	}
+
+	// Call when full-auto fire starts
+	public void StartAuto()
+	{
+		if (activeCoroutine != null) return;
+		activeCoroutine = StartCoroutine(AutoFlicker());
+	}
+
+	// Call when full-auto fire stops
+	public void StopAuto()
+	{
+		StopActive();
+		muzzleLight.enabled = false;
+	}
+
+	private void StopActive()
+	{
+		if (activeCoroutine != null)
 		{
-			GetComponent<Light>().enabled = !GetComponent<Light>().enabled;
-			
-			do
-			{
-				timer -= Time.deltaTime;
-				yield return null;
-			}
-			while(timer > 0);
-			timer = time;
+			StopCoroutine(activeCoroutine);
+			activeCoroutine = null;
+		}
+	}
+
+	private IEnumerator SingleFlicker()
+	{
+		float elapsed = 0f;
+		while (elapsed < singleShotDuration)
+		{
+			muzzleLight.enabled = !muzzleLight.enabled;
+			elapsed += flickerInterval;
+			yield return new WaitForSeconds(flickerInterval);
+		}
+		muzzleLight.enabled = false;
+		activeCoroutine = null;
+	}
+
+	private IEnumerator AutoFlicker()
+	{
+		while (true)
+		{
+			muzzleLight.enabled = !muzzleLight.enabled;
+			yield return new WaitForSeconds(flickerInterval);
 		}
 	}
 }

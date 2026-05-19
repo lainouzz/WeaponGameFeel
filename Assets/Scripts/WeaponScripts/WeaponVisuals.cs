@@ -14,6 +14,7 @@ public class WeaponVisuals : MonoBehaviour
     [Header("Visual References")]
     public ParticleSystem particleSystem;
     public TMP_Text ammoText;
+    public WFX_LightFlicker lightFlicker;
 
     [Header("Visual State")]
     public bool isAutoMuzzlePlaying;
@@ -34,6 +35,7 @@ public class WeaponVisuals : MonoBehaviour
         main.loop = true;
         particleSystem.Play();
         isAutoMuzzlePlaying = true;
+        lightFlicker?.StartAuto();
     }
 
     public void StopAutoMuzzle()
@@ -42,6 +44,7 @@ public class WeaponVisuals : MonoBehaviour
 
         particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         isAutoMuzzlePlaying = false;
+        lightFlicker?.StopAuto();
     }
 
     public void PlaySingleMuzzle()
@@ -50,15 +53,18 @@ public class WeaponVisuals : MonoBehaviour
 
         var main = particleSystem.main;
         main.loop = false;
+        particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         particleSystem.Play();
+        lightFlicker?.PlaySingle();
     }
 
     public void StopMuzzleFlash()
     {
-        if (isAutoMuzzlePlaying)
-        {
-            StopAutoMuzzle();
-        }
+        if (particleSystem == null) return;
+
+        particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        isAutoMuzzlePlaying = false;
+        lightFlicker?.StopAuto();
     }
 
     public void OnDrawStart() { }
