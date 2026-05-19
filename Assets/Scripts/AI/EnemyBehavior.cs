@@ -12,6 +12,8 @@ public class EnemyBehavior : MonoBehaviour, IDamagable
 
     [SerializeField] public List<ItemData> lootTable;
 
+    private bool isDead = false;
+
     private void Awake()
     {
         currentHealth = maxHealth;
@@ -44,34 +46,28 @@ public class EnemyBehavior : MonoBehaviour, IDamagable
     }
     public void TakeDamage(float damage)
     {
+        if (isDead) return;
+
         currentHealth -= damage;
 
         if (currentHealth <= 0)
         {
             currentHealth = 0;
+            isDead = true;
             HandleDeath();
         }
     }
 
     private void HandleDeath()
     {
-        Spawnbehavior.Instance.OnEnemyDeath();
-        SpawnDropLoot();
+        if (Spawnbehavior.Instance != null)
+            Spawnbehavior.Instance.OnEnemyDeath();
+
+        if (WaveManager.Instance != null)
+            WaveManager.Instance.OnEnemyKilled();
+
         Destroy(gameObject);
-    }
-
-    private void SpawnDropLoot()
-    {
-        // Implement loot spawning logic here
-        for (int i = 0; i < lootTable.Count; i++)
-        {
-            float dropChance = Random.Range(0f, 1f);
-            if (dropChance <= lootTable[i].dropProbability)
-            {
-                Instantiate(lootTable[i].itemPrefab, transform.position, Quaternion.identity);
-            }
-        }
-
+        WaveUI.Instance?.UpdateEnemiesLeft(WaveManager.Instance.EnemiesRemaining);
     }
 
     private void OnDestroy() { }

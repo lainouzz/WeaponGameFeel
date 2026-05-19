@@ -82,7 +82,6 @@ public class WeaponIdleState : WeaponStateBase
             case WeaponStateType.Reloading:
             case WeaponStateType.Inspecting:
             case WeaponStateType.Switching:
-            case WeaponStateType.Holstering:
                 return true;
             default:
                 return false;

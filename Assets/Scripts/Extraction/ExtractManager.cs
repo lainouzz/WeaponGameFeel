@@ -31,9 +31,14 @@ public class ExtractManager : MonoBehaviour
 
     void Update()
     {
-        // Start extraction when entering zone
+        // Start extraction when entering zone — only if waves are complete
         if (currentExtractionZone != null && currentExtractionZone.isInExtractZone && !isExtracting)
         {
+            if (WaveManager.Instance != null && !WaveManager.Instance.IsExtractionUnlocked)
+            {
+                // Extraction locked — waves not finished yet
+                return;
+            }
             StartExtractTimer();
         }
 

@@ -35,12 +35,7 @@ public class Spawnbehavior : MonoBehaviour
 
     void Update()
     {
-        // Optional: spawn enemies over time
-        if (Time.time >= nextSpawnTime && currentEnemies < maxEnemies)
-        {
-            SpawnEnemy();
-            nextSpawnTime = Time.time + spawnInterval;
-        }
+        // Spawning is driven by WaveManager — nothing auto-spawns here
     }
 
     /// <summary>

@@ -35,15 +35,7 @@ public class WeaponDrawingState : WeaponStateBase
 
     public override bool CanTransitionTo(WeaponStateType newState)
     {
-        switch (newState)
-        {
-            case WeaponStateType.Idle:
-                return Time.time >= drawEndTime;
-            case WeaponStateType.Holstering:
-                return true; // Can cancel draw to holster
-            default:
-                return false;
-        }
+        return newState == WeaponStateType.Idle && Time.time >= drawEndTime;
     }
 
     // Get draw progress (0 to 1)

@@ -8,6 +8,5 @@ public enum WeaponStateType
     Reloading,
     Switching,
     Inspecting,
-    Drawing,      
-    Holstering    
+    Drawing
 }

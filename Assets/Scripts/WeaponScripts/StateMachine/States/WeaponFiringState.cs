@@ -89,9 +89,7 @@ public class WeaponFiringState : WeaponStateBase
         {
             case WeaponStateType.Idle:
             case WeaponStateType.Reloading:
-                return true;
             case WeaponStateType.Switching:
-            case WeaponStateType.Holstering:
                 return true; // Allow weapon switch even while firing
             default:
                 return false;

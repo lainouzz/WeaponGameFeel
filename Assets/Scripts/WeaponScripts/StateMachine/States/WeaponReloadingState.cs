@@ -109,7 +109,6 @@ public class WeaponReloadingState : WeaponStateBase
             case WeaponStateType.Firing:
                 return weapon.CanCancelReload && weapon.CurrentAmmo > 0;
             case WeaponStateType.Switching:
-            case WeaponStateType.Holstering:
                 return true; // Can always switch weapons
             default:
                 return false;

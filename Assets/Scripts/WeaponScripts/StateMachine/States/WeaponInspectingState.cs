@@ -41,15 +41,6 @@ public class WeaponInspectingState : WeaponStateBase
     {
         // From inspecting, can only go back to idle
         // The Inspect component handles when inspection ends
-        switch (newState)
-        {
-            case WeaponStateType.Idle:
-                return true;
-            case WeaponStateType.Switching:
-            case WeaponStateType.Holstering:
-                return true; // Can always switch weapons
-            default:
-                return false;
-        }
+        return newState == WeaponStateType.Idle;
     }
 }

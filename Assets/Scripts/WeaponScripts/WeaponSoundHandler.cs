@@ -60,7 +60,6 @@ public class WeaponSoundHandler : MonoBehaviour
 
     [Header("Other Sounds")]
     public AudioClip drawSound;
-    public AudioClip holsterSound;
     public AudioClip aimInSound;
     public AudioClip aimOutSound;
 
@@ -156,14 +155,10 @@ public class WeaponSoundHandler : MonoBehaviour
             OnEndReload();
         }
 
-        // Handle draw/holster sounds
+        // Handle draw sounds
         if (to == WeaponStateType.Drawing)
         {
             PlaySound(drawSound, otherVolume);
-        }
-        else if (to == WeaponStateType.Holstering)
-        {
-            PlaySound(holsterSound, otherVolume);
         }
     }
 

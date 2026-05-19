@@ -134,29 +134,33 @@ public class CameraMovement : MonoBehaviour
 
     private void HandleLookX(float lookX)
     {
-        mouseX = lookX * mouseSensX * Time.deltaTime;
-        
-        // Apply horizontal rotation including recoil
+        // Mouse delta from New Input System is already per-frame — no Time.deltaTime
+        mouseX = lookX * mouseSensX * 0.01f;
+
+        // Apply horizontal rotation including recoil — player body only
         float totalYaw = mouseX + recoilYaw;
-        transform.Rotate(Vector3.up * totalYaw);
         playerTransform.Rotate(Vector3.up * totalYaw);
     }
 
     private void HandleLookY(float lookY)
     {
-        mouseY = lookY * mouseSensY * Time.deltaTime;
+        // Mouse delta from New Input System is already per-frame — no Time.deltaTime
+        mouseY = lookY * mouseSensY * 0.01f;
         
-        // Player input counters recoil - pulling down reduces recoil faster
-        if (mouseY > 0 && recoilPitch > 0) // Player pulling down while recoil is up
+        // Player pulling DOWN (negative mouseY) counters upward recoil
+        if (mouseY < 0 && recoilPitch > 0)
         {
-            float counterAmount = mouseY * recoilCounterMultiplier;
+            float counterAmount = Mathf.Abs(mouseY) * recoilCounterMultiplier;
             targetRecoilPitch = Mathf.Max(0, targetRecoilPitch - counterAmount);
         }
 
-        // Apply vertical rotation including current recoil offset
+        // Accumulate mouse look only — recoilPitch is applied separately as a temporary offset
         verticalRot -= mouseY;
-        verticalRot = Mathf.Clamp(verticalRot - recoilPitch, -85.0f, 85.0f);
-        camera.localRotation = Quaternion.Euler(verticalRot, 0f, 0f);
+        verticalRot = Mathf.Clamp(verticalRot, -85.0f, 85.0f);
+
+        // Subtract recoilPitch — positive recoil = camera kicks UP (smaller verticalRot = looking up)
+        float clampedWithRecoil = Mathf.Clamp(verticalRot - recoilPitch, -85.0f, 85.0f);
+        camera.localRotation = Quaternion.Euler(clampedWithRecoil, 0f, 0f);
     }
 
     private void UpdateCrouchCamera()
