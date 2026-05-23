@@ -1,16 +1,5 @@
 using UnityEngine;
 
-// WeaponBallistics
-// Move here from `Weapon.cs`:
-// - `PerformRaycast()`
-// - `ApplyImpactForce(RaycastHit hit, Vector3 direction)`
-// - `CalculateTotalSpread()`
-// - `ApplySpread(Vector3 direction, float spreadAngle)`
-// - `UpdateSpreadRecovery()`
-// - raycast/damage fields: `firePoint`, `statsManager`, `maxRange`, `damage`, `hitLayers`, `impactEffectPrefab`, `impactForce`, `impactForceMode`
-// - spread fields: `hipfireSpread`, `adsSpread`, `walkSpreadBonus`, `sprintSpreadBonus`, `airSpreadBonus`, `crouchSpreadBonus`, `spreadPerShot`, `spreadRecoveryRate`, `maxSustainedSpread`
-// - spread state: `currentSustainedSpread`
-
 public class WeaponBallistics : MonoBehaviour
 {
     [Header("Ballistics References")]
@@ -80,6 +69,10 @@ public class WeaponBallistics : MonoBehaviour
         {
             Debug.DrawLine(ray.origin, hit.point, Color.red, 1f);
 
+            HitZone zone = hit.collider.GetComponent<HitZone>();
+            string zoneInfo = zone != null ? $"[{zone.zoneType} x{zone.damageMultiplier}]" : "[No HitZone]";
+            Debug.Log($"[Ballistics] Hit: {hit.collider.name} {zoneInfo} | Distance: {hit.distance:F2}m | Point: {hit.point}");
+
             if (impactEffectPrefab != null)
             {
                 GameObject impact = Instantiate(impactEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
@@ -88,15 +81,15 @@ public class WeaponBallistics : MonoBehaviour
 
             ApplyImpactForce(hit, ray.direction);
 
-            if (hit.collider.TryGetComponent<IDamagable>(out var damagable))
+            if (hit.collider.TryGetComponent<HitZone>(out var hitZone))
             {
-                if (statsManager == null)
-                {
-                    Debug.LogError("statsManager reference is NULL in WeaponBallistics!");
-                    return;
-                }
-
-                float finalDmg = statsManager.GetFinalDamage(damage);
+                // Hit a specific body part — HitZone applies multiplier and routes to IDamagable
+                hitZone.ProcessHit(damage, statsManager);
+            }
+            else if (hit.collider.TryGetComponent<IDamagable>(out var damagable))
+            {
+                // No HitZone on this collider, damage the object directly
+                float finalDmg = statsManager != null ? statsManager.GetFinalDamage(damage) : damage;
                 damagable.TakeDamage(finalDmg);
             }
         }
